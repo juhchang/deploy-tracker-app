@@ -228,14 +228,15 @@
 </head>
 <body>
 
-  <div class="mockup-banner">MOCKUP — illustrative data · localStorage not wired up · GitHub Gist not connected</div>
-
   <div class="page-header">
     <div>
       <h1>Deploy Tracker</h1>
       <div class="subtitle">Options income planning tool</div>
     </div>
-    <button class="settings-btn" onclick="toggleSettings()">⚙ Sync</button>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span id="sync-status" style="font-size:11px; color:#334155;"></span>
+      <button class="settings-btn" onclick="toggleSettings()">⚙ Sync</button>
+    </div>
   </div>
 
   <div class="settings-panel" id="settingsPanel">
@@ -251,9 +252,10 @@
       </div>
     </div>
     <div class="settings-hint">Token needs only <strong style="color:#64748b;">gist</strong> scope · stored in browser localStorage · never sent anywhere except api.github.com</div>
-    <div style="display:flex; gap:8px; margin-top:10px;">
-      <button class="btn-save" style="font-size:12px; padding:8px 16px;" onclick="toggleSettings()">Save</button>
+    <div style="display:flex; gap:8px; margin-top:10px; align-items:center; flex-wrap:wrap;">
+      <button class="btn-save" style="font-size:12px; padding:8px 16px;" onclick="saveSettings()">Save &amp; sync</button>
       <button class="btn-ghost" onclick="toggleSettings()">Cancel</button>
+      <span id="settings-status" style="font-size:11px; color:#475569;"></span>
     </div>
   </div>
 
@@ -444,6 +446,15 @@
 <script>
   const TAX_RATE = 0.31;
   let selectedSentiment = null;
+  let isSyncing = false;
+
+  const LS_TOKEN     = 'dt-gh-token';
+  const LS_GIST      = 'dt-gh-gist';
+  const LS_SNAPSHOTS = 'dt-snapshots';
+  const LS_JOURNAL   = 'dt-journal';
+  const LS_INPUTS    = 'dt-inputs';
+
+  const INPUT_IDS = ['inp-net-goal','inp-vix','inp-balance','inp-cash','inp-collateral','inp-return','inp-cc-pct'];
 
   const VIX_ZONES = [
     { max:  12, cls: 'z-greed',        name: 'EXTREME GREED', range: '< 12',  cashLo: 0.40, cashHi: 0.50 },
@@ -568,12 +579,110 @@
     }
   }
 
+  // ── localStorage ──────────────────────────────────────────────────────────
+  function saveLocal() {
+    localStorage.setItem(LS_SNAPSHOTS, JSON.stringify(snapshots));
+    localStorage.setItem(LS_JOURNAL,   JSON.stringify(journalEntries));
+  }
+
+  function loadLocal() {
+    try { snapshots       = JSON.parse(localStorage.getItem(LS_SNAPSHOTS)) || []; } catch { snapshots = []; }
+    try { journalEntries  = JSON.parse(localStorage.getItem(LS_JOURNAL))   || []; } catch { journalEntries = []; }
+  }
+
+  function collectInputs() {
+    const obj = {};
+    INPUT_IDS.forEach(id => { obj[id] = document.getElementById(id).value; });
+    return obj;
+  }
+
+  function restoreInputs(saved) {
+    if (!saved) return;
+    INPUT_IDS.forEach(id => { if (saved[id] !== undefined) document.getElementById(id).value = saved[id]; });
+  }
+
+  function saveInputs() {
+    localStorage.setItem(LS_INPUTS, JSON.stringify(collectInputs()));
+  }
+
+  function loadInputs() {
+    try { restoreInputs(JSON.parse(localStorage.getItem(LS_INPUTS))); } catch {}
+  }
+
+  // ── Gist sync ─────────────────────────────────────────────────────────────
+  function getToken()  { return localStorage.getItem(LS_TOKEN)  || ''; }
+  function getGistId() { return localStorage.getItem(LS_GIST)   || ''; }
+
+  function setSyncStatus(state) {
+    const el = document.getElementById('sync-status');
+    const se = document.getElementById('settings-status');
+    const map = {
+      syncing: ['⟳ syncing…', '#64748b'],
+      synced:  ['✓ synced',   '#4ade80'],
+      error:   ['⚠ failed',   '#f87171'],
+      '':      [getToken() ? '' : 'not connected', '#334155'],
+    };
+    const [txt, color] = map[state] || map[''];
+    if (el) { el.textContent = txt; el.style.color = color; }
+    if (se) { se.textContent = txt; se.style.color = color; }
+  }
+
+  function mergeByDate(a, b) {
+    const map = {};
+    [...a, ...b].forEach(e => { map[e.date] = e; });
+    return Object.values(map).sort((x, y) => y.date.localeCompare(x.date));
+  }
+
+  async function gistRequest(method, body) {
+    const res = await fetch(`https://api.github.com/gists/${getGistId()}`, {
+      method,
+      headers: {
+        'Authorization': `Bearer ${getToken()}`,
+        'Content-Type':  'application/json',
+        'Accept':        'application/vnd.github+json',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (!res.ok) throw new Error(`GitHub ${res.status}`);
+    return res.json();
+  }
+
+  async function syncFromGist() {
+    if (!getToken() || !getGistId() || isSyncing) return;
+    isSyncing = true;
+    setSyncStatus('syncing');
+    try {
+      const gist = await gistRequest('GET');
+      const file = gist.files['deploy-data.json'];
+      if (file) {
+        const data = JSON.parse(file.content);
+        snapshots      = mergeByDate(snapshots,      data.snapshots || []);
+        journalEntries = mergeByDate(journalEntries, data.journal   || []);
+        if (data.inputs && !localStorage.getItem(LS_INPUTS)) restoreInputs(data.inputs);
+        saveLocal();
+        renderSnapshots();
+        renderJournal();
+      }
+      setSyncStatus('synced');
+    } catch { setSyncStatus('error'); }
+    finally  { isSyncing = false; }
+  }
+
+  async function syncToGist() {
+    if (!getToken() || !getGistId() || isSyncing) return;
+    isSyncing = true;
+    setSyncStatus('syncing');
+    try {
+      await gistRequest('PATCH', {
+        files: { 'deploy-data.json': { content: JSON.stringify({ snapshots, journal: journalEntries, inputs: collectInputs() }, null, 2) } }
+      });
+      setSyncStatus('synced');
+    } catch { setSyncStatus('error'); }
+    finally  { isSyncing = false; }
+  }
+
   // ── Snapshots ──────────────────────────────────────────────────────────────
-  let snapshots = [
-    { date:'2026-05-07', vix:22.1, ret:2.5, ccPct:75, balance:450000, cash:38000,  collateral:82000, estNet:3840 }, // VIX 22 = Fear zone, min 10% = $45k → RED
-    { date:'2026-04-28', vix:16.0, ret:1.5, ccPct:75, balance:455000, cash:152000, collateral:80000, estNet:2310 }, // VIX 16 = Slight Fear, 20-25% = $91k-$114k → GREEN (above zone)
-    { date:'2026-04-14', vix:19.8, ret:2.0, ccPct:60, balance:462000, cash:102000, collateral:78000, estNet:2640 }, // VIX 19.8 = Slight Fear, 20-25% = $92k-$116k → YELLOW (in zone)
-  ];
+  let snapshots = [];
 
   function renderSnapshots() {
     const container = document.getElementById('snap-scroll');
@@ -663,8 +772,9 @@
       balance, cash, collateral: collat,
       estNet: Math.round(estNet),
     });
-    // localStorage.setItem('deploy-snapshots', JSON.stringify(snapshots));
+    saveLocal();
     renderSnapshots();
+    syncToGist();
   }
 
   function exportSnapshots() {
@@ -675,13 +785,7 @@
   }
 
   // ── Journal ────────────────────────────────────────────────────────────────
-  let journalEntries = [
-    { date:'2026-05-14T09:32:00', tickers:['TQQQ'], sentiment:6, text:'TQQQ feels a bit extended here after the run. VIX dropping fast — might wait for a pullback before adding more puts. Comfortable with existing positions.' },
-    { date:'2026-05-13T14:15:00', tickers:[], sentiment:4, text:'Market feels choppy ahead of FOMC minutes tomorrow. Staying light this week.' },
-    { date:'2026-05-07T10:45:00', tickers:['NVDA','SOFI'], sentiment:8, text:'NVDA held the 50-day nicely. SOFI showing strength too — feeling bullish on both. Might sell puts on NVDA after earnings settle.' },
-    { date:'2026-05-07T08:20:00', tickers:[], sentiment:5, text:'Fear spike this morning, VIX hit 22. Deployed aggressively on TQQQ puts while premium was fat.' },
-    { date:'2026-04-28T11:00:00', tickers:['SOFI'], sentiment:3, text:'SOFI getting crushed. Not adding new positions — waiting for stabilization.' },
-  ];
+  let journalEntries = [];
 
   function parseTickers(str) {
     return str.split(/[,\s]+/).map(t => t.trim().toUpperCase()).filter(Boolean);
@@ -714,9 +818,10 @@
       sentiment: selectedSentiment,
       text,
     });
-    // localStorage.setItem('journal-entries', JSON.stringify(journalEntries));
+    saveLocal();
     clearJournal();
     renderJournal();
+    syncToGist();
   }
 
   function mondayOf(ds) {
@@ -771,11 +876,38 @@
     btn.classList.add('active');
   }
 
-  function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('open'); }
+  function toggleSettings() {
+    const panel = document.getElementById('settingsPanel');
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) {
+      // pre-fill saved values (masked)
+      document.getElementById('cfg-token').placeholder = getToken() ? '(saved — paste to update)' : 'ghp_xxxxxxxxxxxxxxxxxxxx';
+      document.getElementById('cfg-gist').value = getGistId();
+    }
+  }
 
+  function saveSettings() {
+    const token  = document.getElementById('cfg-token').value.trim();
+    const gistId = document.getElementById('cfg-gist').value.trim();
+    if (token)  localStorage.setItem(LS_TOKEN, token);
+    if (gistId) localStorage.setItem(LS_GIST,  gistId);
+    document.getElementById('cfg-token').value = '';
+    toggleSettings();
+    syncFromGist();
+  }
+
+  // save inputs on every recalc
+  const _recalcOrig = recalc;
+  recalc = function() { _recalcOrig(); saveInputs(); };
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  loadLocal();
+  loadInputs();
   recalc();
   renderSnapshots();
   renderJournal();
+  setSyncStatus('');
+  syncFromGist();
 </script>
 </body>
 </html>
