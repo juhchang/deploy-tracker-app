@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 3 Mockup — Behavioral Guards + False Safety Detector</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f1117; color: #e2e8f0;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px; padding: 24px;
+    }
+    h1 { font-size: 20px; font-weight: 700; color: #f8fafc; margin-bottom: 4px; }
+    .subtitle { color: #64748b; font-size: 12px; margin-bottom: 28px; }
+    h2 {
+      font-size: 13px; font-weight: 600; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid #1e293b;
+    }
+    section { margin-bottom: 48px; }
+
+    .mockup-banner {
+      background: #1c1a0e; border: 1px solid #713f12;
+      border-radius: 6px; padding: 10px 16px;
+      color: #fbbf24; font-size: 12px; margin-bottom: 28px;
+    }
+    .placement-tag {
+      display: inline-block; font-size: 10px; font-weight: 600;
+      background: #1e293b; color: #64748b; border-radius: 3px;
+      padding: 2px 7px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+    }
+
+    /* Colors */
+    .green  { color: #4ade80; }
+    .yellow { color: #fbbf24; }
+    .red    { color: #f87171; }
+    .dim    { color: #64748b; }
+    .purple { color: #c4b5fd; }
+
+    /* Cards */
+    .card {
+      background: #131929; border: 1px solid #1e293b;
+      border-radius: 8px; padding: 16px;
+    }
+    .card-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px; }
+    .card-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 16px; }
+    .card-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .card-value { font-size: 28px; font-weight: 700; line-height: 1.1; }
+    .card-sub   { font-size: 11px; color: #64748b; margin-top: 4px; }
+    .split-row  { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; color: #94a3b8; }
+    .split-row.total { font-weight: 600; border-top: 1px solid #1e293b; margin-top: 6px; padding-top: 8px; }
+    hr.divider  { border: none; border-top: 1px solid #1e293b; margin: 10px 0; }
+
+    /* Action alert */
+    .action-alert {
+      border-radius: 8px; padding: 20px 24px; margin-bottom: 16px;
+      display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center;
+    }
+    .action-alert.warn { background: #1a1200; border: 2px solid #854d0e; }
+    .action-alert.ok   { background: #0a1a0f; border: 2px solid #166534; }
+    .action-alert.danger { background: #1a0000; border: 2px solid #7f1d1d; }
+    .action-alert-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .action-alert-body  { font-size: 12px; color: #94a3b8; line-height: 1.6; }
+    .action-alert-number { text-align: right; }
+    .action-alert-number .big   { font-size: 36px; font-weight: 700; line-height: 1; }
+    .action-alert-number .label { font-size: 11px; color: #64748b; margin-top: 4px; }
+
+    /* Compliance score ring */
+    .score-ring {
+      display: flex; align-items: center; gap: 20px; margin-bottom: 14px;
+    }
+    .score-circle {
+      width: 90px; height: 90px; border-radius: 50%; flex-shrink: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-weight: 700; border: 4px solid;
+    }
+    .score-circle .num  { font-size: 28px; line-height: 1; }
+    .score-circle .denom { font-size: 11px; color: #64748b; margin-top: 1px; }
+    .score-bar-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-size: 12px;
+    }
+    .score-bar-label { width: 140px; color: #94a3b8; flex-shrink: 0; }
+    .score-bar-track { flex: 1; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden; }
+    .score-bar-fill  { height: 100%; border-radius: 3px; }
+    .score-bar-pts   { width: 44px; text-align: right; color: #64748b; font-size: 11px; flex-shrink: 0; }
+
+    /* Income urgency bar */
+    .urgency-track {
+      height: 10px; background: #1e293b; border-radius: 5px; overflow: hidden; margin: 8px 0;
+    }
+    .urgency-fill { height: 100%; border-radius: 5px; }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left; padding: 6px 12px; background: #1e293b;
+      color: #94a3b8; font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.06em; white-space: nowrap;
+    }
+    td { padding: 7px 12px; border-bottom: 1px solid #1a2235; white-space: nowrap; }
+    tr:hover td { background: #131929; }
+    .total-row td { border-top: 1px solid #334155; font-weight: 600; background: #131929 !important; }
+
+    .meta-note { font-size: 11px; color: #475569; margin-top: 8px; }
+
+    /* Badges */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .badge-green  { background: #14532d; color: #4ade80; }
+    .badge-yellow { background: #422006; color: #fbbf24; }
+    .badge-red    { background: #450a0a; color: #f87171; }
+    .badge-warn   { background: #431407; color: #fb923c; border: 1px solid #9a3412; }
+
+    /* Score pill */
+    .score-pill {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 22px; border-radius: 4px; font-size: 11px; font-weight: 700;
+    }
+    .score-hi  { background: #14532d; color: #4ade80; }
+    .score-mid { background: #422006; color: #fbbf24; }
+    .score-lo  { background: #450a0a; color: #f87171; }
+
+    /* False safety flag */
+    .false-safety {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #431407; border: 1px solid #9a3412;
+      color: #fb923c; font-size: 10px; font-weight: 600;
+      padding: 2px 7px; border-radius: 4px;
+    }
+
+    /* Status dot */
+    .sdot {
+      width: 8px; height: 8px; border-radius: 50%;
+      display: inline-block; margin-right: 4px; vertical-align: middle; flex-shrink: 0;
+    }
+
+    /* End-of-month bar */
+    .eom-bar-wrap {
+      position: relative; background: #1e293b; border-radius: 5px; height: 12px; margin: 8px 0;
+    }
+    .eom-bar-fill { height: 100%; border-radius: 5px; }
+    .eom-avg-line {
+      position: absolute; top: -3px; bottom: -3px; width: 2px; background: #4ade80; border-radius: 1px;
+    }
+    .eom-avg-label {
+      position: absolute; top: -17px; font-size: 10px; color: #4ade80; white-space: nowrap; transform: translateX(-50%);
+    }
+  </style>
+</head>
+<body>
+
+<h1>Session 3 Mockup — Behavioral Guards + False Safety Detector</h1>
+<p class="subtitle">Static mockup with illustrative data — approve design before build</p>
+
+<div class="mockup-banner">
+  ⚠ Mockup only — numbers are illustrative. Actual values computed from your live data in the build.
+</div>
+
+
+<!-- ======================================================================
+     SECTION 1 — Behavioral Guards
+     Lives in: positions.html — right after Effective Deployable Capital
+     ====================================================================== -->
+<section>
+  <div class="placement-tag">→ positions.html — after Effective Deployable Capital</div>
+  <h2>Behavioral Trading Guards — Am I Trading Well?</h2>
+
+  <div class="card-grid-3">
+
+    <!-- Card 1: Rules Compliance Score -->
+    <div class="card" style="border-color:#854d0e;">
+      <div class="card-label" style="color:#fbbf24;">Rules Compliance Score</div>
+      <div class="score-ring">
+        <div class="score-circle" style="border-color:#fbbf24;color:#fbbf24;">
+          <div class="num">72</div>
+          <div class="denom">/100</div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:8px;">Rolling last 10 trades</div>
+          <div class="score-bar-row">
+            <div class="score-bar-label">Delta in range (0.20–0.30)</div>
+            <div class="score-bar-track"><div class="score-bar-fill" style="width:80%;background:#4ade80;"></div></div>
+            <div class="score-bar-pts">20/25</div>
+          </div>
+          <div class="score-bar-row">
+            <div class="score-bar-label">DTE in range (7–28 days)</div>
+            <div class="score-bar-track"><div class="score-bar-fill" style="width:100%;background:#4ade80;"></div></div>
+            <div class="score-bar-pts">20/20</div>
+          </div>
+          <div class="score-bar-row">
+            <div class="score-bar-label">IV Rank &gt; 50 at entry</div>
+            <div class="score-bar-track"><div class="score-bar-fill" style="width:48%;background:#fbbf24;"></div></div>
+            <div class="score-bar-pts">12/25</div>
+          </div>
+          <div class="score-bar-row">
+            <div class="score-bar-label">Premium ≥ 1% weekly</div>
+            <div class="score-bar-track"><div class="score-bar-fill" style="width:80%;background:#4ade80;"></div></div>
+            <div class="score-bar-pts">16/20</div>
+          </div>
+          <div class="score-bar-row">
+            <div class="score-bar-label">BB confirms direction</div>
+            <div class="score-bar-track"><div class="score-bar-fill" style="width:40%;background:#f87171;"></div></div>
+            <div class="score-bar-pts">4/10</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#475569;line-height:1.5;margin-top:4px;">
+        Drag: low IV Rank entries and BB mis-timed puts. IV Rank was below 50 on 5 of last 10 trades.
+      </div>
+    </div>
+
+    <!-- Card 2: Income Urgency -->
+    <div class="card" style="border-color:#7f1d1d;">
+      <div class="card-label" style="color:#f87171;">Income Urgency</div>
+      <div class="card-value red" style="font-size:22px;margin-bottom:4px;">HIGH ⚠</div>
+      <div class="card-sub" style="color:#f87171;">Significantly behind with 18 days left</div>
+      <hr class="divider"/>
+      <div class="split-row"><span class="dim">Gross target (May)</span><span>$11,478</span></div>
+      <div class="split-row"><span class="dim">Collected so far</span><span class="yellow">$912</span></div>
+      <div class="split-row"><span class="dim">Still needed</span><span class="red">$10,566</span></div>
+      <div class="split-row"><span class="dim">Days elapsed / remaining</span><span>13 / 18 days</span></div>
+      <div class="split-row"><span class="dim">Prorated expected by now</span><span>$4,821</span></div>
+      <div class="split-row total"><span>At pace to collect</span><span class="red">$2,175 (19% of target)</span></div>
+      <div style="margin-top:10px;">
+        <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Progress vs prorated pace</div>
+        <div class="urgency-track">
+          <div class="urgency-fill" style="width:7.9%;background:#f87171;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#475569;">
+          <span>0%</span><span style="color:#f87171;">7.9% collected</span><span>100%</span>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#f87171;margin-top:8px;line-height:1.5;border-top:1px solid #1e293b;padding-top:8px;">
+        ⚠ When urgency is HIGH, the scanner will flag trades that may be income-pressure driven rather than technically sound.
+      </div>
+    </div>
+
+    <!-- Card 3: End-of-Month Risk Creep -->
+    <div class="card">
+      <div class="card-label">End-of-Month Risk Creep</div>
+      <div class="card-value green" style="font-size:22px;margin-bottom:4px;">OK</div>
+      <div class="card-sub">Not in final week yet (18 days remaining)</div>
+      <hr class="divider"/>
+      <div class="split-row"><span class="dim">This week's new positions</span><span>$9,500</span></div>
+      <div class="split-row"><span class="dim">Avg weekly deployment (MTD)</span><span>$7,417</span></div>
+      <div class="split-row total"><span>vs average</span><span class="yellow">+28% above avg</span></div>
+      <div style="margin-top:10px;">
+        <div style="font-size:11px;color:#64748b;margin-bottom:4px;">This week vs monthly average</div>
+        <div class="eom-bar-wrap">
+          <div class="eom-bar-fill" style="width:75%;background:#fbbf24;"></div>
+          <div class="eom-avg-line" style="left:59%;"></div>
+          <div class="eom-avg-label" style="left:59%;">avg</div>
+        </div>
+        <div style="font-size:10px;color:#475569;margin-top:14px;">
+          $9,500 this week vs $7,417 average · 28% above average
+        </div>
+      </div>
+      <div style="font-size:11px;color:#475569;margin-top:10px;line-height:1.5;border-top:1px solid #1e293b;padding-top:8px;">
+        Alert fires in final 7 days of month if new positions exceed average weekly deployment by &gt;20%.
+        Currently watching — will fire if this pattern continues into the last week.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Full compliance detail table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th><th>Ticker</th><th>Type</th><th>Delta</th>
+        <th>DTE</th><th>HV Rank</th><th>Prem %</th><th>BB Pos</th>
+        <th>Score</th><th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="dim">May 9</td><td><strong>NVDA</strong></td><td>Put</td>
+        <td class="green">0.24</td><td class="green">14d</td><td class="green">82</td>
+        <td class="green">1.4%</td><td class="green">28%</td>
+        <td><span class="score-pill score-hi">95</span></td>
+        <td style="font-size:11px;color:#4ade80;">All criteria met ✓</td>
+      </tr>
+      <tr>
+        <td class="dim">May 7</td><td><strong>HOOD</strong></td><td>Call</td>
+        <td class="green">0.26</td><td class="green">7d</td><td class="yellow">48</td>
+        <td class="green">1.1%</td><td class="yellow">52%</td>
+        <td><span class="score-pill score-mid">72</span></td>
+        <td style="font-size:11px;color:#fbbf24;">IV rank just below threshold</td>
+      </tr>
+      <tr>
+        <td class="dim">May 5</td><td><strong>PLTR</strong></td><td>Put</td>
+        <td class="yellow">0.19</td><td class="green">21d</td><td class="yellow">41</td>
+        <td class="yellow">0.8%</td><td class="yellow">47%</td>
+        <td><span class="score-pill score-mid">58</span></td>
+        <td style="font-size:11px;color:#fbbf24;">Delta + IV rank + BB all marginal</td>
+      </tr>
+      <tr>
+        <td class="dim">May 2</td><td><strong>TQQQ</strong></td><td>Put</td>
+        <td class="red">0.31</td><td class="green">7d</td><td class="green">75</td>
+        <td class="green">1.2%</td><td class="red">71%</td>
+        <td><span class="score-pill score-mid">68</span></td>
+        <td style="font-size:11px;color:#fbbf24;">BB near upper band for put — timing off</td>
+      </tr>
+      <tr>
+        <td class="dim">Apr 28</td><td><strong>SOFI</strong></td><td>Put</td>
+        <td class="green">0.23</td><td class="green">14d</td><td class="red">29</td>
+        <td class="red">0.6%</td><td class="yellow">44%</td>
+        <td><span class="score-pill score-lo">41</span></td>
+        <td style="font-size:11px;color:#f87171;">Low IV rank + low premium — likely income pressure</td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="meta-note">Compliance score = delta (25) + DTE (20) + IV Rank &gt;50 (25) + premium ≥1%/wk (20) + BB confirms (10). Rolling last 10 STO trades. Score &lt;60 = trade should have triggered a warning.</p>
+</section>
+
+
+<!-- ======================================================================
+     SECTION 2 — Scanner Enhancements
+     Lives in: combined.html — Trade Opportunities table (new columns)
+     ====================================================================== -->
+<section>
+  <div class="placement-tag">→ combined.html — Trade Opportunities scanner table</div>
+  <h2>Scanner Enhancement — Entry Score + False Safety Detector</h2>
+
+  <p style="font-size:12px;color:#64748b;margin-bottom:14px;">
+    Two new columns added to existing scanner: <strong style="color:#e2e8f0;">Entry Score</strong> (0–100, timing quality) and <strong style="color:#fb923c;">False Safety</strong> flag. All other columns unchanged.
+  </p>
+
+  <!-- Income urgency context bar (above scanner) -->
+  <div class="action-alert danger" style="margin-bottom:16px;">
+    <div>
+      <div class="action-alert-title" style="color:#f87171;">⚠ High Income Urgency — Review entries carefully</div>
+      <div class="action-alert-body">
+        You are at <strong style="color:#fbbf24;">7.9% of monthly target</strong> with 18 days remaining.
+        Urgency is HIGH — this can cause pressure-driven entries on poor timing.
+        Scanner scores below 60 will show a confirmation warning. Proceed with extra discipline.
+      </div>
+    </div>
+    <div class="action-alert-number">
+      <div class="big" style="color:#f87171;">HIGH</div>
+      <div class="label">income urgency</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ticker</th><th>Type</th><th>Expiry</th><th>Strike</th>
+        <th>Delta</th><th>IV%</th><th>HV Rank</th><th>BB Pos</th><th>Suggested</th>
+        <th>Entry Score</th><th>Flag</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- High-score clean trade -->
+      <tr>
+        <td><strong>NVDA</strong></td><td>Put</td><td>May 23</td><td>$105</td>
+        <td class="green">0.24</td>
+        <td class="green">52%</td>
+        <td>
+          <span style="display:inline-block;width:50px;height:6px;background:#1e293b;border-radius:3px;vertical-align:middle;margin-right:5px;overflow:hidden;">
+            <span style="display:block;height:100%;width:82%;background:#4ade80;border-radius:3px;"></span>
+          </span>82
+        </td>
+        <td><span style="color:#60a5fa;">28%</span></td>
+        <td><span style="background:#1e3a5f;color:#60a5fa;padding:1px 6px;border-radius:3px;font-size:10px;">Put</span></td>
+        <td><span class="score-pill score-hi">88</span></td>
+        <td><span style="color:#64748b;font-size:11px;">—</span></td>
+      </tr>
+      <!-- Medium score trade with urgency note -->
+      <tr>
+        <td><strong>HOOD</strong></td><td>Call</td><td>May 16</td><td>$88</td>
+        <td class="green">0.26</td>
+        <td class="yellow">38%</td>
+        <td>
+          <span style="display:inline-block;width:50px;height:6px;background:#1e293b;border-radius:3px;vertical-align:middle;margin-right:5px;overflow:hidden;">
+            <span style="display:block;height:100%;width:61%;background:#fbbf24;border-radius:3px;"></span>
+          </span>61
+        </td>
+        <td><span style="color:#fbbf24;">61%</span></td>
+        <td><span style="background:#2d1b69;color:#a78bfa;padding:1px 6px;border-radius:3px;font-size:10px;">Call</span></td>
+        <td><span class="score-pill score-mid">64</span></td>
+        <td>
+          <span style="font-size:10px;color:#fbbf24;">⚡ Urgency</span>
+        </td>
+      </tr>
+      <!-- Good score put -->
+      <tr>
+        <td><strong>SOFI</strong></td><td>Put</td><td>May 30</td><td>$17</td>
+        <td class="green">0.25</td>
+        <td class="green">47%</td>
+        <td>
+          <span style="display:inline-block;width:50px;height:6px;background:#1e293b;border-radius:3px;vertical-align:middle;margin-right:5px;overflow:hidden;">
+            <span style="display:block;height:100%;width:57%;background:#fbbf24;border-radius:3px;"></span>
+          </span>57
+        </td>
+        <td><span style="color:#60a5fa;">32%</span></td>
+        <td><span style="background:#1e3a5f;color:#60a5fa;padding:1px 6px;border-radius:3px;font-size:10px;">Put</span></td>
+        <td><span class="score-pill score-mid">71</span></td>
+        <td><span style="color:#64748b;font-size:11px;">—</span></td>
+      </tr>
+      <!-- FALSE SAFETY — BMNR low delta, black position -->
+      <tr style="background:rgba(251,115,0,0.06);">
+        <td><strong>BMNR</strong></td><td>Put</td><td>May 16</td><td>$15</td>
+        <td style="color:#f87171;font-weight:600;">0.06</td>
+        <td class="yellow">44%</td>
+        <td>
+          <span style="display:inline-block;width:50px;height:6px;background:#1e293b;border-radius:3px;vertical-align:middle;margin-right:5px;overflow:hidden;">
+            <span style="display:block;height:100%;width:71%;background:#fbbf24;border-radius:3px;"></span>
+          </span>71
+        </td>
+        <td><span style="color:#60a5fa;">22%</span></td>
+        <td><span style="background:#1e3a5f;color:#60a5fa;padding:1px 6px;border-radius:3px;font-size:10px;">Put</span></td>
+        <td><span class="score-pill score-lo">22</span></td>
+        <td>
+          <span class="false-safety">⚠ False Safety</span>
+        </td>
+      </tr>
+      <!-- Low score urgency trade -->
+      <tr>
+        <td><strong>PLTR</strong></td><td>Put</td><td>May 23</td><td>$118</td>
+        <td class="green">0.22</td>
+        <td class="red">28%</td>
+        <td>
+          <span style="display:inline-block;width:50px;height:6px;background:#1e293b;border-radius:3px;vertical-align:middle;margin-right:5px;overflow:hidden;">
+            <span style="display:block;height:100%;width:38%;background:#f87171;border-radius:3px;"></span>
+          </span>38
+        </td>
+        <td><span style="color:#fbbf24;">55%</span></td>
+        <td><span style="background:#1e3b2f;color:#4ade80;padding:1px 6px;border-radius:3px;font-size:10px;">Both</span></td>
+        <td><span class="score-pill score-lo">39</span></td>
+        <td>
+          <span style="font-size:10px;color:#fbbf24;">⚡ Urgency</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="meta-note">
+    Entry Score = HV Rank (35pts) + BB position for direction (35pts) + income urgency adjustment (30pts).<br>
+    ⚠ False Safety: delta ≤ 0.07 on a ⚫ or 🔴 position — premium is minimal, caps recovery upside.<br>
+    ⚡ Urgency: score reduced because income urgency is HIGH — may be a pressure trade rather than optimal entry.
+  </p>
+</section>
+
+
+<!-- ======================================================================
+     SECTION 3 — False Safety Detail Modal / Inline Warning
+     Shows inline under the flagged row when clicked or hovered
+     ====================================================================== -->
+<section>
+  <div class="placement-tag">→ combined.html — inline expansion under flagged scanner row</div>
+  <h2>False Safety Warning — Inline Detail</h2>
+
+  <p style="font-size:12px;color:#64748b;margin-bottom:14px;">
+    When a scanner row is flagged ⚠ False Safety, this detail panel expands below it.
+  </p>
+
+  <div style="background:#1a0a00;border:2px solid #9a3412;border-radius:8px;padding:20px;max-width:700px;">
+    <div style="font-size:14px;font-weight:700;color:#fb923c;margin-bottom:10px;">
+      ⚠ Low Delta Trade on Underwater Position — BMNR
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;">
+      <div>
+        <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Trade Details</div>
+        <div class="split-row"><span class="dim">Strike</span><span>$15.00</span></div>
+        <div class="split-row"><span class="dim">Delta</span><span style="color:#f87171;font-weight:600;">0.06</span></div>
+        <div class="split-row"><span class="dim">Premium (est.)</span><span>~$18/contract</span></div>
+        <div class="split-row"><span class="dim">Recovery capped at</span><span style="color:#f87171;">$15.00/share</span></div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Position Context</div>
+        <div class="split-row"><span class="dim">Status</span><span><span class="sdot" style="background:#94a3b8;"></span><span style="color:#94a3b8;font-weight:600;">Black</span></span></div>
+        <div class="split-row"><span class="dim">Cost basis</span><span>$31.83</span></div>
+        <div class="split-row"><span class="dim">Current price</span><span>$21.69</span></div>
+        <div class="split-row"><span class="dim">Gap to basis</span><span style="color:#f87171;">−31.9%</span></div>
+      </div>
+    </div>
+    <div style="background:#0f1117;border-radius:6px;padding:12px;margin-bottom:14px;font-size:12px;color:#94a3b8;line-height:1.7;">
+      Selling this call at $15 caps your recovery upside at $15/share.<br>
+      Your cost basis is $31.83. You need BMNR to reach <strong style="color:#e2e8f0;">$31.83+</strong> to break even — selling a $15 call permanently blocks that recovery if BMNR moves up fast.<br>
+      At $18 premium per contract on 1,000 shares, this trade collects <strong style="color:#fbbf24;">$180 total</strong> while capping <strong style="color:#f87171;">$10,140 of potential recovery</strong>.
+    </div>
+    <div style="font-size:12px;color:#e2e8f0;margin-bottom:12px;font-weight:600;">Is this trade based on:</div>
+    <div style="display:flex;gap:12px;">
+      <button style="font-family:inherit;font-size:12px;padding:8px 18px;border-radius:6px;border:1px solid #4ade80;background:#0a1a0f;color:#4ade80;cursor:pointer;">Technical Analysis / Conviction</button>
+      <button style="font-family:inherit;font-size:12px;padding:8px 18px;border-radius:6px;border:1px solid #f87171;background:#1a0000;color:#f87171;cursor:pointer;">Income Pressure</button>
+    </div>
+    <div style="font-size:11px;color:#475569;margin-top:10px;">Your selection is logged for behavioral performance review in Session 6 analytics.</div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     SECTION 4 — Low-Score Entry Warning
+     Shows as confirmation modal when entering a trade scoring below 60
+     ====================================================================== -->
+<section>
+  <div class="placement-tag">→ combined.html — inline below scanner row (score &lt; 60)</div>
+  <h2>Low Score Entry Warning — Inline Detail</h2>
+
+  <p style="font-size:12px;color:#64748b;margin-bottom:14px;">
+    When a scanner row scores below 60, this panel expands to provide context before the trader acts.
+  </p>
+
+  <div style="background:#1a1200;border:2px solid #854d0e;border-radius:8px;padding:20px;max-width:700px;">
+    <div style="font-size:14px;font-weight:700;color:#fbbf24;margin-bottom:10px;">
+      ⚡ Low Entry Score — PLTR Put ($118 strike, score 39/100)
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;">
+      <div class="card" style="background:#0f1117;">
+        <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Premium Quality</div>
+        <div style="font-size:18px;font-weight:700;color:#f87171;">9/35</div>
+        <div style="font-size:11px;color:#64748b;margin-top:4px;">HV Rank 38 — below 50 threshold. Options are relatively cheap right now.</div>
+      </div>
+      <div class="card" style="background:#0f1117;">
+        <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Price Positioning</div>
+        <div style="font-size:18px;font-weight:700;color:#fbbf24;">20/35</div>
+        <div style="font-size:11px;color:#64748b;margin-top:4px;">BB 55% — near middle band. Not a strong directional signal for put entry.</div>
+      </div>
+      <div class="card" style="background:#0f1117;">
+        <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Income Urgency</div>
+        <div style="font-size:18px;font-weight:700;color:#f87171;">10/30</div>
+        <div style="font-size:11px;color:#64748b;margin-top:4px;">Urgency HIGH — 7.9% of target, 18 days left. This may be driven by income pressure.</div>
+      </div>
+    </div>
+    <div style="background:#0f1117;border-radius:6px;padding:12px;font-size:12px;color:#94a3b8;line-height:1.7;margin-bottom:14px;">
+      This trade scores <strong style="color:#f87171;">39/100</strong>. The main concerns: IV rank is low (selling cheap options), BB position doesn't confirm put entry, and your income urgency is HIGH — a combination that historically correlates with underperforming trades.<br><br>
+      <strong style="color:#e2e8f0;">Consider waiting</strong> for HV Rank to rise above 50 or price to pull back toward the lower BB before entering this position.
+    </div>
+    <div style="font-size:12px;color:#e2e8f0;margin-bottom:12px;font-weight:600;">Proceed anyway?</div>
+    <div style="display:flex;gap:12px;">
+      <button style="font-family:inherit;font-size:12px;padding:8px 18px;border-radius:6px;border:1px solid #64748b;background:#131929;color:#94a3b8;cursor:pointer;">Wait for better entry</button>
+      <button style="font-family:inherit;font-size:12px;padding:8px 18px;border-radius:6px;border:1px solid #fbbf24;background:#1a1200;color:#fbbf24;cursor:pointer;">Proceed — I have a reason</button>
+    </div>
+    <div style="font-size:11px;color:#475569;margin-top:10px;">Pressing "Proceed" logs this as a low-score entry for performance review.</div>
+  </div>
+</section>
+
+
+</body>
+</html>

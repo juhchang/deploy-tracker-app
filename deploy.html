@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deploy Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0f1117;
+      color: #e2e8f0;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 15px;
+      padding: 16px;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .mockup-banner {
+      background: #78350f; border: 1px solid #d97706; color: #fcd34d;
+      padding: 7px 14px; border-radius: 6px; margin-bottom: 16px;
+      font-size: 12px; letter-spacing: 0.04em; text-align: center;
+    }
+
+    .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+    h1 { font-size: 17px; font-weight: 700; color: #f8fafc; }
+    .subtitle { color: #475569; font-size: 12px; margin-top: 3px; }
+    .settings-btn {
+      background: none; border: 1px solid #1e293b; border-radius: 4px;
+      color: #475569; cursor: pointer; font-family: inherit; font-size: 12px;
+      padding: 6px 11px; white-space: nowrap;
+    }
+    .settings-btn:hover { border-color: #334155; color: #94a3b8; }
+
+    /* Tabs */
+    .tab-bar { display: flex; border-bottom: 1px solid #1e293b; margin-bottom: 16px; }
+    .tab-btn {
+      background: none; border: none; border-bottom: 2px solid transparent;
+      color: #475569; cursor: pointer; font-family: inherit; font-size: 13px;
+      letter-spacing: 0.06em; padding: 8px 18px 9px; text-transform: uppercase;
+      margin-bottom: -1px;
+    }
+    .tab-btn:hover { color: #94a3b8; }
+    .tab-btn.active { color: #e2e8f0; border-bottom-color: #38bdf8; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* Cards */
+    .card { background: #161b27; border: 1px solid #1e293b; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+    .section-label { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 12px; }
+
+    /* Inputs */
+    .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    @media (max-width: 480px) { .input-grid { grid-template-columns: 1fr; } }
+    .input-group { display: flex; flex-direction: column; gap: 5px; }
+    .input-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; }
+    .input-field {
+      background: #0f1117; border: 1px solid #334155; border-radius: 4px;
+      color: #e2e8f0; font-family: inherit; font-size: 16px; padding: 8px 10px; width: 100%;
+    }
+    .input-field:focus { outline: none; border-color: #38bdf8; }
+    .input-field[readonly] { color: #475569; background: #0a0e17; cursor: default; font-size: 15px; }
+    .input-hint { font-size: 11px; color: #475569; }
+    .gross-highlight { color: #e2e8f0; font-weight: 600; }
+    textarea.input-field { resize: vertical; min-height: 72px; line-height: 1.6; font-size: 15px; }
+
+    /* Save button */
+    .save-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid #1e293b; flex-wrap: wrap; }
+    .btn-save {
+      background: #14532d; border: 1px solid #22c55e; border-radius: 5px;
+      color: #4ade80; cursor: pointer; font-family: inherit; font-size: 13px;
+      font-weight: 600; padding: 10px 20px; flex-shrink: 0;
+    }
+    .btn-save:hover { background: #166534; }
+    .save-hint { font-size: 12px; color: #334155; }
+    .btn-ghost {
+      background: transparent; border: 1px solid #1e293b; border-radius: 5px;
+      color: #475569; cursor: pointer; font-family: inherit; font-size: 12px; padding: 7px 13px;
+    }
+    .btn-ghost:hover { border-color: #334155; color: #94a3b8; }
+
+    /* VIX strip */
+    .vix-strip { border-radius: 7px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .vix-strip.z-greed         { background: #052e16; border: 1px solid #16a34a; }
+    .vix-strip.z-slight-greed  { background: #082912; border: 1px solid #22c55e; }
+    .vix-strip.z-slight-fear   { background: #1c1505; border: 1px solid #d97706; }
+    .vix-strip.z-fear          { background: #1a0e0e; border: 1px solid #ef4444; }
+    .vix-strip.z-very-fearful  { background: #1a0808; border: 1px solid #dc2626; }
+    .vix-strip.z-extreme-fear  { background: #130606; border: 1px solid #b91c1c; }
+    .vix-zone-name { font-size: 15px; font-weight: 700; }
+    .z-greed        .vix-zone-name { color: #4ade80; }
+    .z-slight-greed .vix-zone-name { color: #86efac; }
+    .z-slight-fear  .vix-zone-name { color: #fbbf24; }
+    .z-fear         .vix-zone-name { color: #f87171; }
+    .z-very-fearful .vix-zone-name { color: #ef4444; }
+    .z-extreme-fear .vix-zone-name { color: #dc2626; }
+    .vix-sub { font-size: 12px; color: #94a3b8; margin-top: 3px; }
+    .vix-number { font-size: 28px; font-weight: 700; color: #e2e8f0; }
+
+    /* Reserve check */
+    .check-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #1a2133; font-size: 14px; }
+    .check-row:last-child { border-bottom: none; }
+    .check-lbl { color: #64748b; }
+    .check-val { font-weight: 600; }
+    .c-pass { color: #4ade80; } .c-fail { color: #f87171; }
+    .c-blue { color: #38bdf8; } .c-dim  { color: #475569; }
+    .c-white{ color: #e2e8f0; } .c-warn { color: #fbbf24; }
+    .c-red  { color: #f87171; } .c-green{ color: #4ade80; }
+
+    /* Scenario cards */
+    .scenario-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    @media (max-width: 500px) { .scenario-grid { grid-template-columns: 1fr; } }
+    .scenario-card { background: #161b27; border: 1px solid #1e293b; border-radius: 8px; padding: 14px; }
+    .scenario-card.sc-earn { border-color: #1e3a5f; }
+    .scenario-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+    .sc-earn .scenario-title { color: #38bdf8; }
+    .sc-need .scenario-title { color: #94a3b8; }
+    .sc-row { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; border-bottom: 1px solid #1a2133; font-size: 13px; }
+    .sc-row:last-child { border-bottom: none; }
+    .sc-row.divider-row { border-top: 1px solid #334155; margin-top: 4px; padding-top: 8px; }
+    .sc-lbl { color: #64748b; }
+    .sc-val { font-weight: 600; }
+    .big-number { font-size: 26px; font-weight: 700; margin: 10px 0 4px; line-height: 1; }
+    .big-label  { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; }
+    .big-sub    { font-size: 12px; margin-top: 6px; }
+
+    /* Summary bar */
+    .summary-bar { background: #0d1220; border: 1px solid #1e293b; border-radius: 7px; padding: 12px 16px; margin-bottom: 12px; font-size: 13px; line-height: 1.7; color: #94a3b8; }
+    .summary-bar strong { color: #e2e8f0; }
+    .hl-green  { color: #4ade80; font-weight: 600; }
+    .hl-yellow { color: #fbbf24; font-weight: 600; }
+    .hl-red    { color: #f87171; font-weight: 600; }
+    .hl-blue   { color: #38bdf8; font-weight: 600; }
+
+    /* ── Snapshot trend rows ── */
+    .snap-log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .snap-scroll { max-height: 400px; overflow-y: auto; }
+    .snap-scroll::-webkit-scrollbar { width: 4px; }
+    .snap-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+
+    .snap-entry {
+      background: #0d1220;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+    }
+    .snap-entry:last-child { margin-bottom: 0; }
+
+    .snap-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .snap-date { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+    .snap-meta { font-size: 11px; color: #475569; }
+
+    .snap-metrics {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+    @media (max-width: 500px) { .snap-metrics { grid-template-columns: repeat(3, 1fr); } }
+
+    .snap-metric { display: flex; flex-direction: column; gap: 2px; }
+    .snap-metric-label { font-size: 10px; color: #334155; text-transform: uppercase; letter-spacing: 0.07em; }
+    .snap-metric-value { font-size: 14px; font-weight: 600; color: #e2e8f0; }
+    .snap-metric-delta { font-size: 11px; font-weight: 600; }
+    .delta-up-good   { color: #4ade80; }
+    .delta-down-good { color: #4ade80; }
+    .delta-up-bad    { color: #f87171; }
+    .delta-down-bad  { color: #f87171; }
+    .delta-neutral   { color: #475569; }
+
+    /* ── Journal tab ── */
+    .journal-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    @media (max-width: 480px) { .journal-inputs { grid-template-columns: 1fr; } }
+
+    .sentiment-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .sent-btn {
+      border: 1px solid transparent; border-radius: 4px; cursor: pointer;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      padding: 7px 0; width: 40px; text-align: center; transition: transform 0.1s;
+    }
+    .sent-btn:hover { transform: scale(1.1); }
+    .sent-btn[data-v="1"]  { background: #2d0a0a; border-color: #7f1d1d; color: #f87171; }
+    .sent-btn[data-v="2"]  { background: #2d0a0a; border-color: #7f1d1d; color: #f87171; }
+    .sent-btn[data-v="3"]  { background: #2d0a0a; border-color: #991b1b; color: #fca5a5; }
+    .sent-btn[data-v="4"]  { background: #1c1000; border-color: #78350f; color: #fbbf24; }
+    .sent-btn[data-v="5"]  { background: #1c1400; border-color: #92400e; color: #fcd34d; }
+    .sent-btn[data-v="6"]  { background: #1a1600; border-color: #a16207; color: #fde68a; }
+    .sent-btn[data-v="7"]  { background: #052e16; border-color: #166534; color: #86efac; }
+    .sent-btn[data-v="8"]  { background: #052e16; border-color: #15803d; color: #4ade80; }
+    .sent-btn[data-v="9"]  { background: #042a12; border-color: #16a34a; color: #4ade80; }
+    .sent-btn[data-v="10"] { background: #042a12; border-color: #22c55e; color: #22c55e; }
+    .sent-btn.selected { transform: scale(1.12); outline: 2px solid currentColor; outline-offset: 1px; }
+    .sent-label { font-size: 11px; color: #475569; margin-top: 6px; display: flex; justify-content: space-between; }
+
+    /* Journal log */
+    .week-group { margin-bottom: 20px; }
+    .week-heading { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #334155; padding: 6px 0 8px; border-bottom: 1px solid #1e293b; margin-bottom: 4px; }
+    .journal-entry { padding: 10px 0; border-bottom: 1px solid #0f1117; }
+    .journal-entry:last-child { border-bottom: none; }
+    .entry-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+    .entry-date { font-size: 12px; color: #475569; white-space: nowrap; }
+    .entry-ticker { font-size: 12px; background: #1e293b; border-radius: 3px; color: #94a3b8; padding: 1px 7px; }
+    .entry-sentiment { font-size: 12px; font-weight: 700; border-radius: 3px; padding: 1px 8px; }
+    .sent-low  { background: #2d0a0a; color: #f87171; }
+    .sent-mid  { background: #1c1000; color: #fbbf24; }
+    .sent-high { background: #052e16; color: #4ade80; }
+    .entry-text { font-size: 14px; color: #cbd5e1; line-height: 1.6; white-space: pre-wrap; }
+
+    /* Settings */
+    .settings-panel { display: none; background: #0d1220; border: 1px solid #334155; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+    .settings-panel.open { display: block; }
+    .settings-panel h3 { font-size: 13px; color: #94a3b8; margin-bottom: 12px; }
+    .settings-row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 480px) { .settings-row-grid { grid-template-columns: 1fr; } }
+    .settings-hint { font-size: 11px; color: #334155; margin-top: 10px; line-height: 1.6; }
+
+    .empty-state { color: #334155; font-size: 13px; text-align: center; padding: 20px; }
+    .footer-note { text-align: center; color: #1e293b; font-size: 11px; margin-top: 8px; padding-bottom: 24px; }
+  </style>
+</head>
+<body>
+
+  <div class="mockup-banner">MOCKUP — illustrative data · localStorage not wired up · GitHub Gist not connected</div>
+
+  <div class="page-header">
+    <div>
+      <h1>Deploy Tracker</h1>
+      <div class="subtitle">Options income planning tool</div>
+    </div>
+    <button class="settings-btn" onclick="toggleSettings()">⚙ Sync</button>
+  </div>
+
+  <div class="settings-panel" id="settingsPanel">
+    <h3>GitHub Gist sync — enter once per device</h3>
+    <div class="settings-row-grid">
+      <div class="input-group">
+        <label class="input-label">GitHub personal access token</label>
+        <input class="input-field" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
+      </div>
+      <div class="input-group">
+        <label class="input-label">Gist ID</label>
+        <input class="input-field" type="text" placeholder="abc123def456..." />
+      </div>
+    </div>
+    <div class="settings-hint">Token needs only <strong style="color:#64748b;">gist</strong> scope · stored in browser localStorage · never sent anywhere except api.github.com</div>
+    <div style="display:flex; gap:8px; margin-top:10px;">
+      <button class="btn-save" style="font-size:12px; padding:8px 16px;" onclick="toggleSettings()">Save</button>
+      <button class="btn-ghost" onclick="toggleSettings()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('deploy', this)">Deploy</button>
+    <button class="tab-btn" onclick="switchTab('journal', this)">Journal</button>
+  </div>
+
+  <!-- ══ DEPLOY TAB ══ -->
+  <div class="tab-pane active" id="tab-deploy">
+
+    <div class="card">
+      <div class="section-label">Inputs</div>
+      <div class="input-grid">
+        <div class="input-group">
+          <label class="input-label">Monthly net goal (post-tax)</label>
+          <input class="input-field" type="text" id="inp-net-goal" value="10000" oninput="recalc()" />
+          <div class="input-hint">→ gross target: <span class="gross-highlight" id="gross-display">$14,493</span> at 31% blended</div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Current VIX</label>
+          <input class="input-field" type="text" id="inp-vix" value="18.5" oninput="recalc()" />
+          <div class="input-hint">Check: finance.yahoo.com → %5EVIX</div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Account balance (total)</label>
+          <input class="input-field" type="text" id="inp-balance" value="448000" oninput="recalc()" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Cash on hand</label>
+          <input class="input-field" type="text" id="inp-cash" value="125000" oninput="recalc()" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Open CSP collateral</label>
+          <input class="input-field" type="text" id="inp-collateral" value="85000" oninput="recalc()" />
+          <div class="input-hint">Strike × 100 × contracts in open puts</div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Est. share holdings</label>
+          <input class="input-field" id="inp-shares-display" readonly value="$238,000" />
+          <div class="input-hint">Auto: balance − cash − CSP collateral</div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Target return % / month</label>
+          <input class="input-field" type="text" id="inp-return" value="2.0" oninput="recalc()" />
+          <div class="input-hint">Expected return on deployed capital</div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">% of shares to sell calls on</label>
+          <input class="input-field" type="text" id="inp-cc-pct" value="75" oninput="recalc()" />
+          <div class="input-hint">e.g. 75 = sell CCs on 75% of holdings</div>
+        </div>
+      </div>
+      <div class="save-row">
+        <button class="btn-save" onclick="saveSnapshot()">↓ Save snapshot to log</button>
+        <span class="save-hint">Saves current inputs + outputs as a dated entry</span>
+      </div>
+    </div>
+
+    <div id="vix-strip" class="vix-strip z-slight-fear">
+      <div>
+        <div class="vix-zone-name" id="vix-zone-name">SLIGHT FEAR</div>
+        <div class="vix-sub" id="vix-zone-range">VIX 15–20 · hold 20–25% cash reserve</div>
+        <div class="vix-sub" id="vix-reserve-range" style="margin-top:3px;">Required reserve: $89,600 – $112,000</div>
+      </div>
+      <div class="vix-number" id="vix-display">18.5</div>
+    </div>
+
+    <div class="card">
+      <div class="section-label">Cash reserve check</div>
+      <div class="check-row">
+        <span class="check-lbl">Required reserve (zone midpoint)</span>
+        <span class="check-val c-dim" id="chk-required">$100,800</span>
+      </div>
+      <div class="check-row">
+        <span class="check-lbl">Cash on hand</span>
+        <span class="check-val c-white" id="chk-cash">$125,000</span>
+      </div>
+      <div class="check-row">
+        <span class="check-lbl">Free cash for new CSPs</span>
+        <span class="check-val c-blue" id="chk-csp-cap">$24,200</span>
+      </div>
+      <div class="check-row">
+        <span class="check-lbl">Reserve status</span>
+        <span class="check-val c-pass" id="chk-status">+$24,200 surplus ✓</span>
+      </div>
+    </div>
+
+    <div class="scenario-grid">
+      <div class="scenario-card sc-earn">
+        <div class="scenario-title">At <span id="sc-ret-label">2.0%</span> return</div>
+        <div class="sc-row"><span class="sc-lbl">CSP capacity (VIX-adjusted)</span><span class="sc-val c-blue" id="sc-csp-cap">$24,200</span></div>
+        <div class="sc-row"><span class="sc-lbl">Shares in CCs (<span id="sc-cc-pct-label">75%</span>)</span><span class="sc-val c-dim" id="sc-cc-value">$178,500</span></div>
+        <div class="sc-row"><span class="sc-lbl">Total deployed</span><span class="sc-val c-white" id="sc-total-deployed">$202,700</span></div>
+        <div class="sc-row divider-row"><span class="sc-lbl">CSP income</span><span class="sc-val" id="sc-csp-income">$484</span></div>
+        <div class="sc-row"><span class="sc-lbl">CC income</span><span class="sc-val" id="sc-cc-income">$3,570</span></div>
+        <div class="sc-row"><span class="sc-lbl">Gross</span><span class="sc-val c-white" id="sc-gross">$4,054</span></div>
+        <div class="big-number" id="sc-net-big" style="color:#38bdf8;">$2,797</div>
+        <div class="big-label">Est. net / month</div>
+        <div class="big-sub" id="sc-vs-goal" style="color:#f87171;">−$7,203 short of $10,000 goal</div>
+      </div>
+      <div class="scenario-card sc-need">
+        <div class="scenario-title">To hit goal</div>
+        <div class="sc-row"><span class="sc-lbl">Post-tax goal</span><span class="sc-val c-white" id="sc-net-goal">$10,000</span></div>
+        <div class="sc-row"><span class="sc-lbl">Gross target</span><span class="sc-val c-white" id="sc-gross-target">$14,493</span></div>
+        <div class="sc-row"><span class="sc-lbl">Total deployable (<span id="sc-cc-pct-label2">75%</span> CC)</span><span class="sc-val c-dim" id="sc-deployable">$202,700</span></div>
+        <div class="big-number" id="sc-breakeven-big" style="color:#fbbf24;">7.1%</div>
+        <div class="big-label">Return % needed / month</div>
+        <div class="big-sub" id="sc-gap-label" style="color:#f87171;">+5.1% above your 2.0% target</div>
+      </div>
+    </div>
+
+    <div class="summary-bar" id="summary-bar">
+      At <strong>2.0%</strong> / <strong>75%</strong> CC: earn ~<span class="hl-blue">$2,797 net</span>.
+      To hit <strong>$10,000/month</strong> you need <span class="hl-yellow">7.1%</span> — 3.6× your current target.
+    </div>
+
+    <!-- Snapshot trend log -->
+    <div class="card">
+      <div class="snap-log-header">
+        <div class="section-label" style="margin-bottom:0;">Past snapshots</div>
+        <button class="btn-ghost" style="font-size:12px;" onclick="exportSnapshots()">Export JSON</button>
+      </div>
+      <div class="snap-scroll" id="snap-scroll"></div>
+      <div id="snapshot-empty" class="empty-state" style="display:none;">
+        No snapshots yet — fill in the form above and click Save snapshot to log.
+      </div>
+    </div>
+
+  </div><!-- /tab-deploy -->
+
+
+  <!-- ══ JOURNAL TAB ══ -->
+  <div class="tab-pane" id="tab-journal">
+
+    <div class="card">
+      <div class="section-label">New entry</div>
+
+      <div class="input-group" style="margin-bottom:14px;">
+        <label class="input-label">Market sentiment</label>
+        <div class="sentiment-row" id="sentiment-row">
+          <button class="sent-btn" data-v="1"  onclick="selectSentiment(1)">1</button>
+          <button class="sent-btn" data-v="2"  onclick="selectSentiment(2)">2</button>
+          <button class="sent-btn" data-v="3"  onclick="selectSentiment(3)">3</button>
+          <button class="sent-btn" data-v="4"  onclick="selectSentiment(4)">4</button>
+          <button class="sent-btn" data-v="5"  onclick="selectSentiment(5)">5</button>
+          <button class="sent-btn" data-v="6"  onclick="selectSentiment(6)">6</button>
+          <button class="sent-btn" data-v="7"  onclick="selectSentiment(7)">7</button>
+          <button class="sent-btn" data-v="8"  onclick="selectSentiment(8)">8</button>
+          <button class="sent-btn" data-v="9"  onclick="selectSentiment(9)">9</button>
+          <button class="sent-btn" data-v="10" onclick="selectSentiment(10)">10</button>
+        </div>
+        <div class="sent-label"><span>1 = very bearish</span><span>10 = very bullish</span></div>
+      </div>
+
+      <div class="journal-inputs">
+        <div class="input-group">
+          <label class="input-label">Tickers (optional, comma-separated)</label>
+          <input class="input-field" type="text" id="j-ticker" placeholder="TQQQ, NVDA, SOFI..." style="text-transform:uppercase;" />
+          <div class="input-hint">Each ticker saved as its own badge</div>
+        </div>
+        <div style="display:flex; align-items:flex-end; padding-bottom:10px;">
+          <div style="font-size:13px; color:#475569;">
+            Sentiment: <span id="j-sent-preview" style="color:#475569; font-weight:600;">not selected</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Thoughts</label>
+        <textarea class="input-field" id="j-text" style="min-height:90px;"
+          placeholder="TQQQ, NVDA feel extended. Staying light this week ahead of FOMC..."></textarea>
+      </div>
+
+      <div class="save-row">
+        <button class="btn-save" onclick="saveJournalEntry()">↓ Save entry</button>
+        <button class="btn-ghost" onclick="clearJournal()">Clear</button>
+      </div>
+    </div>
+
+    <div id="journal-log"></div>
+    <div id="journal-empty" class="empty-state" style="display:none;">No entries yet.</div>
+
+  </div><!-- /tab-journal -->
+
+  <div class="footer-note">Stored in browser localStorage · sync via GitHub Gist once connected</div>
+
+<script>
+  const TAX_RATE = 0.31;
+  let selectedSentiment = null;
+
+  const VIX_ZONES = [
+    { max:  12, cls: 'z-greed',        name: 'EXTREME GREED', range: '< 12',  cashLo: 0.40, cashHi: 0.50 },
+    { max:  15, cls: 'z-slight-greed', name: 'GREED',         range: '12–15', cashLo: 0.30, cashHi: 0.40 },
+    { max:  20, cls: 'z-slight-fear',  name: 'SLIGHT FEAR',   range: '15–20', cashLo: 0.20, cashHi: 0.25 },
+    { max:  25, cls: 'z-fear',         name: 'FEAR',          range: '20–25', cashLo: 0.10, cashHi: 0.15 },
+    { max:  30, cls: 'z-very-fearful', name: 'VERY FEARFUL',  range: '25–30', cashLo: 0.05, cashHi: 0.10 },
+    { max: 999, cls: 'z-extreme-fear', name: 'EXTREME FEAR',  range: '≥ 30',  cashLo: 0.00, cashHi: 0.05 },
+  ];
+
+  function parseNum(v) { return parseFloat(String(v).replace(/[$,%\s]/g,'')) || 0; }
+  function fmt(n)      { return '$' + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 0 }); }
+  function fmtPct(n)   { return n.toFixed(1) + '%'; }
+  function getZone(v)  { return VIX_ZONES.find(z => v < z.max) || VIX_ZONES[5]; }
+
+  function fmtK(n) {
+    const abs = Math.abs(n), sign = n < 0 ? '−' : '';
+    if (abs >= 100000) return sign + '$' + Math.round(abs/1000) + 'k';
+    if (abs >= 10000)  return sign + '$' + (abs/1000).toFixed(1) + 'k';
+    if (abs >= 1000)   return sign + '$' + (abs/1000).toFixed(1) + 'k';
+    return sign + '$' + Math.round(abs);
+  }
+
+  function fmtDelta(n, goodDir) {
+    if (Math.abs(n) < 1) return '<span class="delta-neutral">—</span>';
+    const arrow = n > 0 ? '↑' : '↓';
+    if (goodDir === 'neutral') return `<span class="delta-neutral">${arrow} ${fmtK(Math.abs(n))}</span>`;
+    const isGood = (goodDir === 'up' && n > 0) || (goodDir === 'down' && n < 0);
+    const cls = isGood ? (n > 0 ? 'delta-up-good' : 'delta-down-good') : (n > 0 ? 'delta-up-bad' : 'delta-down-bad');
+    return `<span class="${cls}">${arrow} ${fmtK(Math.abs(n))}</span>`;
+  }
+
+  function fmtDeltaPct(n, goodDir) {
+    if (Math.abs(n) < 0.05) return '<span class="delta-neutral">—</span>';
+    const arrow = n > 0 ? '↑' : '↓';
+    const isGood = (goodDir === 'up' && n > 0) || (goodDir === 'down' && n < 0);
+    const cls = isGood ? (n > 0 ? 'delta-up-good' : 'delta-down-good') : (n > 0 ? 'delta-up-bad' : 'delta-down-bad');
+    return `<span class="${cls}">${arrow} ${Math.abs(n).toFixed(1)}%</span>`;
+  }
+
+  // ── Deploy calc ────────────────────────────────────────────────────────────
+  function recalc() {
+    const net     = parseNum(document.getElementById('inp-net-goal').value);
+    const vix     = parseFloat(document.getElementById('inp-vix').value) || 18.5;
+    const balance = parseNum(document.getElementById('inp-balance').value);
+    const cash    = parseNum(document.getElementById('inp-cash').value);
+    const collat  = parseNum(document.getElementById('inp-collateral').value);
+    const retPct  = (parseFloat(document.getElementById('inp-return').value) || 0) / 100;
+    const ccPct   = (parseFloat(document.getElementById('inp-cc-pct').value) || 0) / 100;
+
+    const gross    = net / (1 - TAX_RATE);
+    const shares   = balance - cash - collat;
+    const zone     = getZone(vix);
+    const midRes   = (zone.cashLo + zone.cashHi) / 2;
+    const reqRes   = balance * midRes;
+    const surplus  = cash - reqRes;
+    const cspCap   = Math.max(0, surplus);
+    const ccValue  = shares * ccPct;
+    const totalDep = cspCap + ccValue;
+    const earnGross= (cspCap + ccValue) * retPct;
+    const earnNet  = earnGross * (1 - TAX_RATE);
+    const vsGoal   = earnNet - net;
+    const breakeven= totalDep > 0 ? (gross / totalDep) * 100 : 0;
+    const retGap   = breakeven - retPct * 100;
+    const mult     = retPct > 0 ? breakeven / (retPct * 100) : 0;
+
+    document.getElementById('gross-display').textContent = fmt(Math.round(gross));
+    document.getElementById('inp-shares-display').value  = fmt(shares);
+
+    const strip = document.getElementById('vix-strip');
+    strip.className = 'vix-strip ' + zone.cls;
+    document.getElementById('vix-zone-name').textContent     = zone.name;
+    document.getElementById('vix-zone-range').textContent    = 'VIX ' + zone.range + ' · hold ' + Math.round(zone.cashLo*100) + '–' + Math.round(zone.cashHi*100) + '% cash reserve';
+    document.getElementById('vix-reserve-range').textContent = 'Required reserve: ' + fmt(balance * zone.cashLo) + ' – ' + fmt(balance * zone.cashHi);
+    document.getElementById('vix-display').textContent       = vix.toFixed(1);
+
+    document.getElementById('chk-required').textContent = fmt(Math.round(reqRes));
+    document.getElementById('chk-cash').textContent     = fmt(cash);
+    document.getElementById('chk-csp-cap').textContent  = fmt(Math.round(cspCap));
+    const statusEl = document.getElementById('chk-status');
+    statusEl.textContent = surplus >= 0 ? '+' + fmt(surplus) + ' surplus ✓' : '−' + fmt(Math.abs(surplus)) + ' short ✗';
+    statusEl.className   = 'check-val ' + (surplus >= 0 ? 'c-pass' : 'c-fail');
+
+    const retLabel = fmtPct(retPct * 100), ccPctLabel = Math.round(ccPct * 100) + '%';
+    document.getElementById('sc-ret-label').textContent     = retLabel;
+    document.getElementById('sc-cc-pct-label').textContent  = ccPctLabel;
+    document.getElementById('sc-cc-pct-label2').textContent = ccPctLabel;
+    document.getElementById('sc-csp-cap').textContent       = fmt(Math.round(cspCap));
+    document.getElementById('sc-cc-value').textContent      = fmt(Math.round(ccValue));
+    document.getElementById('sc-total-deployed').textContent= fmt(Math.round(totalDep));
+    document.getElementById('sc-csp-income').textContent    = fmt(Math.round(cspCap * retPct));
+    document.getElementById('sc-cc-income').textContent     = fmt(Math.round(ccValue * retPct));
+    document.getElementById('sc-gross').textContent         = fmt(Math.round(earnGross));
+
+    const netBig = document.getElementById('sc-net-big');
+    netBig.textContent = fmt(Math.round(earnNet));
+    netBig.style.color = earnNet >= net ? '#4ade80' : '#38bdf8';
+
+    const vsGoalEl = document.getElementById('sc-vs-goal');
+    vsGoalEl.textContent = vsGoal >= 0 ? '+' + fmt(vsGoal) + ' above goal ✓' : '−' + fmt(Math.abs(vsGoal)) + ' short of $' + net.toLocaleString() + ' goal';
+    vsGoalEl.style.color = vsGoal >= 0 ? '#4ade80' : '#f87171';
+
+    document.getElementById('sc-net-goal').textContent    = fmt(net);
+    document.getElementById('sc-gross-target').textContent= fmt(Math.round(gross));
+    document.getElementById('sc-deployable').textContent  = fmt(Math.round(totalDep));
+
+    const bevenBig = document.getElementById('sc-breakeven-big');
+    bevenBig.textContent = fmtPct(breakeven);
+    bevenBig.style.color = retGap <= 0 ? '#4ade80' : retGap < 2 ? '#fbbf24' : '#f87171';
+
+    const gapEl = document.getElementById('sc-gap-label');
+    gapEl.textContent = retGap <= 0 ? 'Your ' + retLabel + ' target covers the goal ✓' : '+' + fmtPct(retGap) + ' above your ' + retLabel + ' target';
+    gapEl.style.color = retGap <= 0 ? '#4ade80' : '#f87171';
+
+    const bar = document.getElementById('summary-bar');
+    if (surplus < 0) {
+      bar.innerHTML = `<span class="hl-red">Reserve not met.</span> Add ${fmt(Math.abs(surplus))} to cash before deploying.`;
+    } else if (retGap <= 0) {
+      bar.innerHTML = `At <strong>${retLabel}</strong> / <strong>${ccPctLabel}</strong> CC: earn ~<span class="hl-green">${fmt(Math.round(earnNet))} net</span>. Target covers the goal ✓`;
+    } else {
+      bar.innerHTML = `At <strong>${retLabel}</strong> / <strong>${ccPctLabel}</strong> CC: earn ~<span class="hl-blue">${fmt(Math.round(earnNet))} net</span>. To hit <strong>$${net.toLocaleString()}/month</strong> you need <span class="hl-yellow">${fmtPct(breakeven)}</span> — ${mult.toFixed(1)}× your current target.`;
+    }
+  }
+
+  // ── Snapshots ──────────────────────────────────────────────────────────────
+  let snapshots = [
+    { date:'2026-05-07', vix:22.1, ret:2.5, ccPct:75, balance:450000, cash:38000,  collateral:82000, estNet:3840 }, // VIX 22 = Fear zone, min 10% = $45k → RED
+    { date:'2026-04-28', vix:16.0, ret:1.5, ccPct:75, balance:455000, cash:152000, collateral:80000, estNet:2310 }, // VIX 16 = Slight Fear, 20-25% = $91k-$114k → GREEN (above zone)
+    { date:'2026-04-14', vix:19.8, ret:2.0, ccPct:60, balance:462000, cash:102000, collateral:78000, estNet:2640 }, // VIX 19.8 = Slight Fear, 20-25% = $92k-$116k → YELLOW (in zone)
+  ];
+
+  function renderSnapshots() {
+    const container = document.getElementById('snap-scroll');
+    const empty     = document.getElementById('snapshot-empty');
+    if (!snapshots.length) { container.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+
+    const sorted = snapshots.slice().sort((a,b) => b.date.localeCompare(a.date));
+
+    container.innerHTML = sorted.map((e, i) => {
+      const prev   = sorted[i + 1];
+      const d      = new Date(e.date + 'T12:00:00');
+      const ds     = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const shares = e.balance - e.cash - e.collateral;
+      const pShares= prev ? (prev.balance - prev.cash - prev.collateral) : null;
+
+      const dBalance  = prev ? e.balance     - prev.balance    : null;
+      const dCash     = prev ? e.cash        - prev.cash       : null;
+      const dCollat   = prev ? e.collateral  - prev.collateral : null;
+      const dShares   = prev ? shares        - pShares         : null;
+      const dEstNet   = prev ? e.estNet      - prev.estNet     : null;
+
+      const snapZone   = getZone(e.vix);
+      const cashPct    = e.balance > 0 ? e.cash / e.balance : 0;
+      const cashColor  = cashPct < snapZone.cashLo  ? '#f87171'  // below reserve min → red
+                       : cashPct <= snapZone.cashHi ? '#4ade80'  // within zone → green
+                       : '#fbbf24';                               // above zone → yellow (over-reserved)
+
+      const first = '<span class="delta-neutral">first</span>';
+      return `<div class="snap-entry">
+        <div class="snap-header-row">
+          <span class="snap-date">${ds}</span>
+          <span class="snap-meta">VIX ${e.vix} · ${e.ret}% ret · ${e.ccPct}% CC</span>
+        </div>
+        <div class="snap-metrics">
+          <div class="snap-metric">
+            <div class="snap-metric-label">Balance</div>
+            <div class="snap-metric-value">${fmtK(e.balance)}</div>
+            <div class="snap-metric-delta">${dBalance !== null ? fmtDelta(dBalance, 'up') : first}</div>
+          </div>
+          <div class="snap-metric">
+            <div class="snap-metric-label">Cash</div>
+            <div class="snap-metric-value" style="color:${cashColor};">${fmtK(e.cash)}</div>
+            <div class="snap-metric-delta">${dCash !== null ? fmtDelta(dCash, 'neutral') : first}</div>
+          </div>
+          <div class="snap-metric">
+            <div class="snap-metric-label">CSP collat.</div>
+            <div class="snap-metric-value">${fmtK(e.collateral)}</div>
+            <div class="snap-metric-delta">${dCollat !== null ? fmtDelta(dCollat, 'neutral') : first}</div>
+          </div>
+          <div class="snap-metric">
+            <div class="snap-metric-label">Est. shares</div>
+            <div class="snap-metric-value">${fmtK(shares)}</div>
+            <div class="snap-metric-delta">${dShares !== null ? fmtDelta(dShares, 'neutral') : first}</div>
+          </div>
+          <div class="snap-metric">
+            <div class="snap-metric-label">Est. net</div>
+            <div class="snap-metric-value">${fmtK(e.estNet)}</div>
+            <div class="snap-metric-delta">${dEstNet !== null ? fmtDelta(dEstNet, 'up') : first}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function saveSnapshot() {
+    const net     = parseNum(document.getElementById('inp-net-goal').value);
+    const gross   = net / (1 - TAX_RATE);
+    const vix     = parseFloat(document.getElementById('inp-vix').value) || 18.5;
+    const balance = parseNum(document.getElementById('inp-balance').value);
+    const cash    = parseNum(document.getElementById('inp-cash').value);
+    const collat  = parseNum(document.getElementById('inp-collateral').value);
+    const retPct  = parseFloat(document.getElementById('inp-return').value) / 100 || 0;
+    const ccPct   = parseFloat(document.getElementById('inp-cc-pct').value) / 100 || 0;
+    const shares  = balance - cash - collat;
+    const zone    = getZone(vix);
+    const cspCap  = Math.max(0, cash - balance * ((zone.cashLo + zone.cashHi) / 2));
+    const ccValue = shares * ccPct;
+    const totalDep= cspCap + ccValue;
+    const estNet  = totalDep * retPct * (1 - TAX_RATE);
+    const beven   = totalDep > 0 ? (gross / totalDep) * 100 : 0;
+
+    snapshots.unshift({
+      date: new Date().toISOString().slice(0, 10),
+      vix, ret: parseFloat((retPct*100).toFixed(1)),
+      ccPct: Math.round(ccPct*100),
+      balance, cash, collateral: collat,
+      estNet: Math.round(estNet),
+    });
+    // localStorage.setItem('deploy-snapshots', JSON.stringify(snapshots));
+    renderSnapshots();
+  }
+
+  function exportSnapshots() {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(snapshots, null, 2)], { type: 'application/json' }));
+    a.download = 'deploy-snapshots-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+  }
+
+  // ── Journal ────────────────────────────────────────────────────────────────
+  let journalEntries = [
+    { date:'2026-05-14T09:32:00', tickers:['TQQQ'], sentiment:6, text:'TQQQ feels a bit extended here after the run. VIX dropping fast — might wait for a pullback before adding more puts. Comfortable with existing positions.' },
+    { date:'2026-05-13T14:15:00', tickers:[], sentiment:4, text:'Market feels choppy ahead of FOMC minutes tomorrow. Staying light this week.' },
+    { date:'2026-05-07T10:45:00', tickers:['NVDA','SOFI'], sentiment:8, text:'NVDA held the 50-day nicely. SOFI showing strength too — feeling bullish on both. Might sell puts on NVDA after earnings settle.' },
+    { date:'2026-05-07T08:20:00', tickers:[], sentiment:5, text:'Fear spike this morning, VIX hit 22. Deployed aggressively on TQQQ puts while premium was fat.' },
+    { date:'2026-04-28T11:00:00', tickers:['SOFI'], sentiment:3, text:'SOFI getting crushed. Not adding new positions — waiting for stabilization.' },
+  ];
+
+  function parseTickers(str) {
+    return str.split(/[,\s]+/).map(t => t.trim().toUpperCase()).filter(Boolean);
+  }
+
+  function selectSentiment(v) {
+    selectedSentiment = v;
+    document.querySelectorAll('.sent-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelector(`.sent-btn[data-v="${v}"]`).classList.add('selected');
+    const color = v <= 3 ? '#f87171' : v <= 6 ? '#fbbf24' : '#4ade80';
+    document.getElementById('j-sent-preview').textContent = v + '/10';
+    document.getElementById('j-sent-preview').style.color = color;
+  }
+
+  function clearJournal() {
+    document.getElementById('j-ticker').value = '';
+    document.getElementById('j-text').value   = '';
+    selectedSentiment = null;
+    document.querySelectorAll('.sent-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('j-sent-preview').textContent = 'not selected';
+    document.getElementById('j-sent-preview').style.color = '#475569';
+  }
+
+  function saveJournalEntry() {
+    const text = document.getElementById('j-text').value.trim();
+    if (!text) return;
+    journalEntries.unshift({
+      date: new Date().toISOString(),
+      tickers: parseTickers(document.getElementById('j-ticker').value),
+      sentiment: selectedSentiment,
+      text,
+    });
+    // localStorage.setItem('journal-entries', JSON.stringify(journalEntries));
+    clearJournal();
+    renderJournal();
+  }
+
+  function mondayOf(ds) {
+    const d = new Date(ds), day = d.getDay();
+    d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
+    return d.toISOString().slice(0,10);
+  }
+
+  function weekLabel(mon) {
+    const d = new Date(mon + 'T12:00:00'), s = new Date(d);
+    s.setDate(d.getDate() + 6);
+    const f = dt => dt.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    return 'Week of ' + f(d) + ' – ' + f(s);
+  }
+
+  function sentClass(v) { return !v ? '' : v <= 3 ? 'sent-low' : v <= 6 ? 'sent-mid' : 'sent-high'; }
+
+  function renderJournal() {
+    const container = document.getElementById('journal-log');
+    const empty     = document.getElementById('journal-empty');
+    if (!journalEntries.length) { container.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+
+    const groups = {};
+    journalEntries.forEach(e => {
+      const wk = mondayOf(e.date);
+      (groups[wk] = groups[wk] || []).push(e);
+    });
+
+    container.innerHTML = Object.keys(groups).sort((a,b) => b.localeCompare(a)).map(wk => {
+      const entries = groups[wk].map(e => {
+        const d  = new Date(e.date);
+        const ds = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+        const ts = d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+        const tickers  = e.tickers.length ? e.tickers.map(t => `<span class="entry-ticker">${t}</span>`).join('') : '';
+        const sent = e.sentiment ? `<span class="entry-sentiment ${sentClass(e.sentiment)}">${e.sentiment}/10</span>` : '';
+        return `<div class="journal-entry">
+          <div class="entry-meta">
+            <span class="entry-date">${ds} · ${ts}</span>${tickers}${sent}
+          </div>
+          <div class="entry-text">${e.text}</div>
+        </div>`;
+      }).join('');
+      return `<div class="week-group"><div class="week-heading">${weekLabel(wk)}</div>${entries}</div>`;
+    }).join('');
+  }
+
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('open'); }
+
+  recalc();
+  renderSnapshots();
+  renderJournal();
+</script>
+</body>
+</html>

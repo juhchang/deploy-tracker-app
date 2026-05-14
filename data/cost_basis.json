@@ -1,0 +1,10 @@
+{
+  "note": "Blended average cost basis per ticker — from Robinhood app. Update after large position changes.",
+  "positions": [
+    {"ticker": "HOOD",  "cost_basis": 82.26},
+    {"ticker": "SOFI",  "cost_basis": 19.79},
+    {"ticker": "PLTR",  "cost_basis": 160.19},
+    {"ticker": "BMNR",  "cost_basis": 31.83},
+    {"ticker": "NVDA",  "cost_basis": 191.66}
+  ]
+}

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 1 Mockup — Position Status Framework</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0f1117;
+      color: #e2e8f0;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      padding: 24px;
+    }
+
+    h1 { font-size: 20px; font-weight: 700; color: #f8fafc; margin-bottom: 4px; }
+    .subtitle { color: #64748b; font-size: 12px; margin-bottom: 28px; }
+
+    h2 {
+      font-size: 13px; font-weight: 600; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 12px; padding-bottom: 6px;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    section { margin-bottom: 36px; }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    th {
+      text-align: left; padding: 6px 12px;
+      background: #1e293b; color: #94a3b8;
+      font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.06em; white-space: nowrap;
+    }
+
+    td { padding: 7px 12px; border-bottom: 1px solid #1a2235; white-space: nowrap; }
+    tr:hover td { background: #131929; }
+
+    .green  { color: #4ade80; }
+    .red    { color: #f87171; }
+    .yellow { color: #fbbf24; }
+    .dim    { color: #64748b; }
+    .blue   { color: #60a5fa; }
+
+    /* Status dot badges */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600;
+    }
+    .status-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      display: inline-block; flex-shrink: 0;
+    }
+    .dot-green  { background: #4ade80; }
+    .dot-yellow { background: #fbbf24; }
+    .dot-red    { background: #f87171; }
+    .dot-black  { background: #94a3b8; border: 1px solid #475569; }
+
+    /* Row tinting by status */
+    tr.row-green  td { background: rgba(74, 222, 128, 0.04); }
+    tr.row-yellow td { background: rgba(251, 191, 36, 0.04); }
+    tr.row-red    td { background: rgba(248, 113, 113, 0.06); }
+    tr.row-black  td { background: rgba(148, 163, 184, 0.04); }
+
+    tr.row-green:hover  td { background: rgba(74, 222, 128, 0.08); }
+    tr.row-yellow:hover td { background: rgba(251, 191, 36, 0.08); }
+    tr.row-red:hover    td { background: rgba(248, 113, 113, 0.10); }
+    tr.row-black:hover  td { background: rgba(148, 163, 184, 0.08); }
+
+    /* Coverage ratio pill */
+    .coverage-pill {
+      display: inline-block; padding: 2px 8px;
+      border-radius: 10px; font-size: 11px; font-weight: 600;
+    }
+    .cov-ok   { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+    .cov-warn { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+    .cov-over { background: rgba(248, 113, 113, 0.15); color: #f87171; }
+
+    /* Legend box */
+    .legend {
+      display: flex; gap: 20px; flex-wrap: wrap;
+      background: #131929; border: 1px solid #1e293b;
+      border-radius: 6px; padding: 12px 16px; margin-bottom: 16px;
+      font-size: 12px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 7px; }
+    .legend-label { color: #94a3b8; }
+
+    /* Put buffer bar */
+    .buffer-bar {
+      display: inline-block; width: 50px; height: 6px;
+      background: #1e293b; border-radius: 3px;
+      vertical-align: middle; margin-right: 5px; overflow: hidden;
+    }
+    .buffer-fill { height: 100%; border-radius: 3px; }
+
+    .meta-note {
+      font-size: 11px; color: #475569; margin-top: 10px;
+    }
+
+    .mockup-banner {
+      background: #1c1a0e; border: 1px solid #713f12;
+      border-radius: 6px; padding: 10px 16px;
+      color: #fbbf24; font-size: 12px; margin-bottom: 28px;
+    }
+
+    .total-row td { border-top: 1px solid #334155; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<h1>Session 1 Mockup — Position Status Framework</h1>
+<p class="subtitle">Static mockup with illustrative data — approve design before wiring up real scripts</p>
+
+<div class="mockup-banner">
+  ⚠ Mockup only — all prices, cost bases, and coverage ratios below are illustrative. Real data wired up in Session 1 build.
+</div>
+
+
+<!-- ===================================================================== -->
+<!-- OPEN PUT POSITIONS                                                      -->
+<!-- ===================================================================== -->
+<section id="puts-section">
+  <h2>Open Put Positions (Cash Collateral)</h2>
+
+  <div class="legend">
+    <div class="legend-item"><span class="status-dot dot-green"></span><span class="legend-label">🟢 Strike ≥15% below price — safe buffer</span></div>
+    <div class="legend-item"><span class="status-dot dot-yellow"></span><span class="legend-label">🟡 Strike 5–15% below price — watching</span></div>
+    <div class="legend-item"><span class="status-dot dot-red"></span><span class="legend-label">🔴 Strike within 5% of price — assignment risk</span></div>
+    <div class="legend-item"><span class="status-dot dot-black"></span><span class="legend-label">⚫ Strike above price — in the money</span></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Status</th>
+        <th>Expiry</th>
+        <th>Ticker</th>
+        <th>Contracts</th>
+        <th>Strike</th>
+        <th>Price</th>
+        <th>Buffer</th>
+        <th>Collateral</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- 🟢 TQQQ — deep buffer -->
+      <tr class="row-green">
+        <td><span class="status-badge"><span class="status-dot dot-green"></span><span class="green">Green</span></span></td>
+        <td class="dim">2026-05-16</td>
+        <td><strong>TQQQ</strong></td>
+        <td>2</td>
+        <td>$75.00</td>
+        <td>$82.40</td>
+        <td>
+          <div class="buffer-bar"><div class="buffer-fill" style="width:60%;background:#4ade80"></div></div>
+          <span class="green">+$7.40 (+9.9%)</span>
+        </td>
+        <td class="yellow">$15,000.00</td>
+      </tr>
+
+      <!-- 🟡 HOOD — moderate buffer -->
+      <tr class="row-yellow">
+        <td><span class="status-badge"><span class="status-dot dot-yellow"></span><span class="yellow">Yellow</span></span></td>
+        <td class="dim">2026-05-23</td>
+        <td><strong>HOOD</strong></td>
+        <td>3</td>
+        <td>$28.00</td>
+        <td>$30.20</td>
+        <td>
+          <div class="buffer-bar"><div class="buffer-fill" style="width:30%;background:#fbbf24"></div></div>
+          <span class="yellow">+$2.20 (+7.3%)</span>
+        </td>
+        <td class="yellow">$8,400.00</td>
+      </tr>
+
+      <!-- 🔴 PLTR — tight buffer -->
+      <tr class="row-red">
+        <td><span class="status-badge"><span class="status-dot dot-red"></span><span class="red">Red</span></span></td>
+        <td class="dim">2026-05-30</td>
+        <td><strong>PLTR</strong></td>
+        <td>2</td>
+        <td>$118.00</td>
+        <td>$120.50</td>
+        <td>
+          <div class="buffer-bar"><div class="buffer-fill" style="width:12%;background:#fb923c"></div></div>
+          <span class="red">+$2.50 (+2.1%)</span>
+        </td>
+        <td class="yellow">$23,600.00</td>
+      </tr>
+
+      <!-- ⚫ SOFI — in the money -->
+      <tr class="row-black">
+        <td><span class="status-badge"><span class="status-dot dot-black"></span><span class="dim">Black</span></span></td>
+        <td class="dim">2026-06-06</td>
+        <td><strong>SOFI</strong></td>
+        <td>5</td>
+        <td>$12.00</td>
+        <td>$11.50</td>
+        <td>
+          <div class="buffer-bar"><div class="buffer-fill" style="width:100%;background:#f87171"></div></div>
+          <span class="red">−$0.50 (−4.2%) ITM</span>
+        </td>
+        <td class="yellow">$6,000.00</td>
+      </tr>
+
+      <!-- Total row -->
+      <tr class="total-row">
+        <td colspan="7">Total Collateral</td>
+        <td class="yellow">$53,000.00</td>
+      </tr>
+
+    </tbody>
+  </table>
+  <p class="meta-note">Buffer = current price − put strike. Negative buffer = put is in the money (ITM).</p>
+</section>
+
+
+<!-- ===================================================================== -->
+<!-- OPEN CALL POSITIONS                                                     -->
+<!-- ===================================================================== -->
+<section id="calls-section">
+  <h2>Open Call Positions (Covered Calls)</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Expiry</th>
+        <th>Ticker</th>
+        <th>Contracts</th>
+        <th>Strike</th>
+        <th>Shares Req.</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="dim">2026-05-30</td>
+        <td><strong>HOOD</strong></td>
+        <td>5</td>
+        <td>$34.00</td>
+        <td>500</td>
+      </tr>
+      <tr>
+        <td class="dim">2026-06-06</td>
+        <td><strong>SOFI</strong></td>
+        <td>3</td>
+        <td>$16.00</td>
+        <td>300</td>
+      </tr>
+      <tr>
+        <td class="dim">2026-05-23</td>
+        <td><strong>BMNR</strong></td>
+        <td>1</td>
+        <td>$10.00</td>
+        <td>100</td>
+      </tr>
+    </tbody>
+  </table>
+
+
+  <!-- ------------------------------------------------------------------ -->
+  <!-- COVERED CALL SHARE EXPOSURE — main new section                     -->
+  <!-- ------------------------------------------------------------------ -->
+  <h2 style="margin-top:24px">Covered Call Share Exposure</h2>
+
+  <div class="legend">
+    <div class="legend-item"><span class="status-dot dot-green"></span><span class="legend-label">🟢 At/above cost basis → 100% coverage OK</span></div>
+    <div class="legend-item"><span class="status-dot dot-yellow"></span><span class="legend-label">🟡 5–15% below → 50–75% coverage suggested</span></div>
+    <div class="legend-item"><span class="status-dot dot-red"></span><span class="legend-label">🔴 15–30% below → 25–50% coverage suggested</span></div>
+    <div class="legend-item"><span class="status-dot dot-black"></span><span class="legend-label">⚫ 30%+ below → 0–25% — protect recovery upside</span></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Status</th>
+        <th>Ticker</th>
+        <th>CC Contracts</th>
+        <th>Shares in CC</th>
+        <th>Shares Held</th>
+        <th>Cost Basis</th>
+        <th>Price</th>
+        <th>Gap %</th>
+        <th>Suggested Coverage</th>
+        <th>Actual Coverage</th>
+        <th>Last Price</th>
+        <th>Position Value</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- 🟢 HOOD — slightly below basis but within 5% → treat as green -->
+      <tr class="row-green">
+        <td><span class="status-badge"><span class="status-dot dot-green"></span><span class="green">Green</span></span></td>
+        <td><strong>HOOD</strong></td>
+        <td>5</td>
+        <td>500</td>
+        <td>800</td>
+        <td class="dim">$29.40</td>
+        <td>$30.20</td>
+        <td><span class="green">+2.7%</span></td>
+        <td><span class="dim">100%</span></td>
+        <td><span class="coverage-pill cov-ok">62.5% ✓</span></td>
+        <td class="dim">$30.20</td>
+        <td class="yellow">$24,160.00</td>
+      </tr>
+
+      <!-- 🟡 SOFI — ~15–20% below basis -->
+      <tr class="row-yellow">
+        <td><span class="status-badge"><span class="status-dot dot-yellow"></span><span class="yellow">Yellow</span></span></td>
+        <td><strong>SOFI</strong></td>
+        <td>3</td>
+        <td>300</td>
+        <td>2600</td>
+        <td class="dim">$13.80</td>
+        <td>$11.50</td>
+        <td><span class="red">−16.7%</span></td>
+        <td><span class="yellow">50–75%</span></td>
+        <td><span class="coverage-pill cov-warn">11.5% ⚠</span></td>
+        <td class="dim">$11.50</td>
+        <td class="yellow">$29,900.00</td>
+      </tr>
+
+      <!-- ⚫ BMNR — 55%+ below basis -->
+      <tr class="row-black">
+        <td><span class="status-badge"><span class="status-dot dot-black"></span><span class="dim">Black</span></span></td>
+        <td><strong>BMNR</strong></td>
+        <td>1</td>
+        <td>100</td>
+        <td>500</td>
+        <td class="dim">$14.00</td>
+        <td>$6.20</td>
+        <td><span class="red">−55.7%</span></td>
+        <td><span class="dim">0–25%</span></td>
+        <td><span class="coverage-pill cov-ok">20.0% ✓</span></td>
+        <td class="dim">$6.20</td>
+        <td class="yellow">$3,100.00</td>
+      </tr>
+
+      <!-- Total row -->
+      <tr class="total-row">
+        <td colspan="11">Total CC Position Value</td>
+        <td class="yellow">$57,160.00</td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  <p class="meta-note">
+    Gap % = (current price − cost basis) / cost basis. Negative = underwater.<br>
+    Actual Coverage = shares in CC / shares held. Suggested Coverage based on distance from cost basis.<br>
+    ⚠ flag = actual coverage is outside suggested range for current position status.
+  </p>
+</section>
+
+
+<!-- ===================================================================== -->
+<!-- SECOND EXAMPLE: what a TQQQ Red position would look like              -->
+<!-- (added to show all 4 status levels clearly)                            -->
+<!-- ===================================================================== -->
+<section>
+  <h2>Additional Example — All Four Status Levels Side by Side</h2>
+  <p class="meta-note" style="margin-bottom:12px">This table shows a hypothetical set of 4 positions to demonstrate each status tier visually.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Status</th>
+        <th>Ticker</th>
+        <th>Shares Held</th>
+        <th>Cost Basis</th>
+        <th>Price</th>
+        <th>Gap %</th>
+        <th>Suggested Coverage</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <tr class="row-green">
+        <td><span class="status-badge"><span class="status-dot dot-green"></span><span class="green">Green</span></span></td>
+        <td><strong>NVDA</strong></td>
+        <td>100</td>
+        <td class="dim">$112.00</td>
+        <td>$118.50</td>
+        <td><span class="green">+5.8%</span></td>
+        <td>100%</td>
+        <td class="dim">Sell calls normally at/above basis</td>
+      </tr>
+
+      <tr class="row-yellow">
+        <td><span class="status-badge"><span class="status-dot dot-yellow"></span><span class="yellow">Yellow</span></span></td>
+        <td><strong>HOOD</strong></td>
+        <td>800</td>
+        <td class="dim">$36.00</td>
+        <td>$30.20</td>
+        <td><span class="red">−16.1%</span></td>
+        <td>50–75%</td>
+        <td class="dim">Partial coverage, best available strike</td>
+      </tr>
+
+      <tr class="row-red">
+        <td><span class="status-badge"><span class="status-dot dot-red"></span><span class="red">Red</span></span></td>
+        <td><strong>TQQQ</strong></td>
+        <td>200</td>
+        <td class="dim">$92.00</td>
+        <td>$75.50</td>
+        <td><span class="red">−17.9%</span></td>
+        <td>25–50%</td>
+        <td class="dim">Light coverage, roll existing if needed</td>
+      </tr>
+
+      <tr class="row-black">
+        <td><span class="status-badge"><span class="status-dot dot-black"></span><span class="dim">Black</span></span></td>
+        <td><strong>BMNR</strong></td>
+        <td>500</td>
+        <td class="dim">$14.00</td>
+        <td>$6.20</td>
+        <td><span class="red">−55.7%</span></td>
+        <td>0–25%</td>
+        <td class="dim">Hold — protect recovery upside</td>
+      </tr>
+
+    </tbody>
+  </table>
+</section>
+
+</body>
+</html>

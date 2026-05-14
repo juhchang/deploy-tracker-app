@@ -1,0 +1,8 @@
+{
+  "note": "Shares held before the earliest CSV export. Update when older CSVs are added.",
+  "positions": [
+    { "ticker": "HOOD",  "shares": 800  },
+    { "ticker": "SOFI",  "shares": 2300 },
+    { "ticker": "BMNR",  "shares": 500  }
+  ]
+}

@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Position Status — Options Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0f1117;
+      color: #e2e8f0;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      padding: 24px;
+    }
+
+    h1 { font-size: 20px; font-weight: 700; color: #f8fafc; margin-bottom: 4px; }
+    .subtitle { color: #64748b; font-size: 12px; margin-bottom: 24px; }
+
+    h2 {
+      font-size: 13px; font-weight: 600; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 12px; padding-bottom: 6px;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    section { margin-bottom: 36px; }
+
+    /* Nav */
+    .nav {
+      display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap;
+    }
+    .nav a {
+      color: #64748b; text-decoration: none; font-size: 12px;
+      padding: 4px 10px; border: 1px solid #1e293b; border-radius: 4px;
+    }
+    .nav a:hover { color: #e2e8f0; border-color: #334155; }
+    .nav a.active { color: #e2e8f0; border-color: #475569; background: #1e293b; }
+
+    /* Status summary bar */
+    .status-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .status-card {
+      background: #131929;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .status-card .dot {
+      width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
+    }
+    .status-card .count {
+      font-size: 24px; font-weight: 700; line-height: 1;
+    }
+    .status-card .label {
+      font-size: 11px; color: #64748b; margin-top: 2px;
+    }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left; padding: 6px 12px;
+      background: #1e293b; color: #94a3b8;
+      font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.06em; white-space: nowrap;
+    }
+    td { padding: 7px 12px; border-bottom: 1px solid #1a2235; white-space: nowrap; }
+
+    tr.row-green  td { background: rgba(74, 222, 128, 0.03); }
+    tr.row-yellow td { background: rgba(251, 191, 36, 0.03); }
+    tr.row-red    td { background: rgba(248, 113, 113, 0.05); }
+    tr.row-black  td { background: rgba(148, 163, 184, 0.03); }
+    tr:hover td   { background: #131929 !important; }
+
+    .green  { color: #4ade80; }
+    .yellow { color: #fbbf24; }
+    .red    { color: #f87171; }
+    .dim    { color: #64748b; }
+    .purple { color: #a78bfa; }
+
+    .total-row td { border-top: 1px solid #334155 !important; font-weight: 600; background: transparent !important; }
+
+    /* Status cell */
+    .status-cell {
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .status-dot {
+      width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; display: inline-block;
+    }
+
+    /* Coverage pill */
+    .cov-pill {
+      padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600; white-space: nowrap;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex; gap: 16px; flex-wrap: wrap;
+      background: #131929; border: 1px solid #1e293b;
+      border-radius: 5px; padding: 9px 14px;
+      margin-bottom: 12px; font-size: 11px;
+    }
+
+    .meta-note { font-size: 11px; color: #475569; margin-top: 8px; }
+    .no-data   { color: #334155; padding: 20px 12px; }
+    .loading   { color: #334155; padding: 20px 12px; }
+
+    /* ── cards / split layout ── */
+    .card {
+      background: #131929; border: 1px solid #1e293b;
+      border-radius: 8px; padding: 16px;
+    }
+    .card-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .card-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+    .split-row   { display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; padding: 3px 0; }
+    .split-row.total { padding-top: 6px; border-top: 1px solid #1e293b; margin-top: 4px; font-weight: 600; }
+    .split-divider { border: none; border-top: 1px solid #1e293b; margin: 10px 0; }
+    .green  { color: #4ade80; }
+    .yellow { color: #fbbf24; }
+    .red    { color: #f87171; }
+    .purple { color: #c4b5fd; }
+
+    /* ── action alert ── */
+    .action-alert {
+      border-radius: 8px; padding: 20px 24px; margin-bottom: 16px;
+      display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center;
+    }
+    .action-alert.warn { background: #1a1200; border: 2px solid #854d0e; }
+    .action-alert.ok   { background: #0a1a0f; border: 2px solid #166534; }
+    .action-alert-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .action-alert-body  { font-size: 12px; color: #94a3b8; line-height: 1.6; }
+    .action-alert-number { text-align: right; }
+    .action-alert-number .big   { font-size: 36px; font-weight: 700; line-height: 1; }
+    .action-alert-number .label { font-size: 11px; color: #64748b; margin-top: 4px; }
+
+    /* ── deployment bar ── */
+    .dep-bar-wrap {
+      position: relative; background: #1e293b;
+      border-radius: 5px; height: 14px; overflow: visible; margin: 5px 0 20px;
+    }
+    .dep-bar-fill { height: 100%; border-radius: 5px; }
+    .dep-target-line {
+      position: absolute; top: -4px; bottom: -4px;
+      width: 2px; background: #4ade80; border-radius: 1px;
+    }
+    .dep-target-label {
+      position: absolute; top: -18px; font-size: 10px;
+      color: #4ade80; white-space: nowrap; transform: translateX(-50%);
+    }
+    .dep-bar-labels { display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-bottom: 5px; }
+
+    /* ── monthly history ── */
+    .month-hist-row {
+      display: grid; grid-template-columns: 72px 1fr 80px 48px;
+      align-items: center; gap: 10px; padding: 6px 0;
+      border-bottom: 1px solid #1a2235; font-size: 12px;
+    }
+    .month-hist-row:last-child { border-bottom: none; }
+    .month-hist-header { color: #64748b; font-size: 11px; }
+    .mini-bar { height: 7px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<h1>Position Status</h1>
+<p class="subtitle">Cost basis tracking · coverage guidance · assignment risk</p>
+
+<nav class="nav">
+  <a href="/">Combined Dashboard</a>
+  <a href="/dashboard">Trade History</a>
+  <a href="/positions" class="active">Position Status</a>
+</nav>
+
+<!-- ── Deployment Rate Tracker ─────────────────────────────────────────────── -->
+<section id="deploy-section">
+  <h2>Deployment Rate — Am I Working My Capital?</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;" id="dep-vix-check">
+    <p class="loading">Loading…</p>
+  </div>
+  <div id="dep-alert"></div>
+  <div class="dep-bar-labels" id="dep-bar-labels" style="display:none;"></div>
+  <div class="dep-bar-wrap" id="dep-bar" style="display:none;"></div>
+  <div class="card-grid-3" style="margin-top:4px;" id="dep-cards"><p class="loading">Loading…</p></div>
+</section>
+
+<!-- ── Effective Deployable Capital ──────────────────────────────────────── -->
+<section id="eff-capital-section">
+  <h2>Effective Deployable Capital &amp; Adjusted Monthly Goal</h2>
+  <div class="card-grid-3" style="margin-bottom:14px;" id="eff-cards"><p class="loading">Loading…</p></div>
+  <div id="eff-table"></div>
+</section>
+
+<!-- Status summary bar -->
+<div class="status-bar" id="status-bar">
+  <div class="status-card"><div class="dot" style="background:#4ade80"></div><div><div class="count green" id="count-green">—</div><div class="label">Green — at/above basis</div></div></div>
+  <div class="status-card"><div class="dot" style="background:#fbbf24"></div><div><div class="count yellow" id="count-yellow">—</div><div class="label">Yellow — 5–15% below</div></div></div>
+  <div class="status-card"><div class="dot" style="background:#f87171"></div><div><div class="count red" id="count-red">—</div><div class="label">Red — 15–30% below</div></div></div>
+  <div class="status-card"><div class="dot" style="background:#94a3b8"></div><div><div class="count dim" id="count-black">—</div><div class="label">Black — 30%+ below</div></div></div>
+</div>
+
+<section id="holdings-section">
+  <h2>All Share Holdings</h2>
+  <div id="holdings-container"><p class="loading">Loading…</p></div>
+</section>
+
+<section id="calls-section">
+  <h2>Covered Call Coverage Analysis</h2>
+  <div id="calls-container"><p class="loading">Loading…</p></div>
+</section>
+
+<section id="pnl-section">
+  <h2>Total Position P&L — Options Income + Stock Movement</h2>
+  <div id="pnl-container"><p class="loading">Loading…</p></div>
+</section>
+
+<section id="puts-section">
+  <h2>Open Put Positions — Assignment Risk</h2>
+  <div id="puts-container"><p class="loading">Loading…</p></div>
+</section>
+
+<!-- ── Monthly History ───────────────────────────────────────────────────── -->
+<section id="history-section">
+  <h2>Deployment Rate — Monthly Premium History</h2>
+  <div id="history-container"><p class="loading">Loading…</p></div>
+</section>
+
+<script>
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  function d$(v, dec = 2) {
+    if (v == null) return '<span class="dim">—</span>';
+    const n = Number(v);
+    const s = Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+    return (n < 0 ? '-' : '') + '$' + s;
+  }
+
+  const SM = {
+    green:   { color: '#4ade80', label: 'Green',  rowClass: 'row-green'  },
+    yellow:  { color: '#fbbf24', label: 'Yellow', rowClass: 'row-yellow' },
+    red:     { color: '#f87171', label: 'Red',    rowClass: 'row-red'    },
+    black:   { color: '#94a3b8', label: 'Black',  rowClass: 'row-black'  },
+    unknown: { color: '#475569', label: '—',      rowClass: ''           },
+  };
+
+  function statusCell(status) {
+    const m = SM[status] || SM.unknown;
+    return `<span class="status-cell">
+      <span class="status-dot" style="background:${m.color}"></span>
+      <span style="color:${m.color};font-weight:600;">${m.label}</span>
+    </span>`;
+  }
+
+  function gapCell(pct) {
+    if (pct == null) return '<span class="dim">—</span>';
+    const c = pct >= 0 ? '#4ade80' : '#f87171';
+    return `<span style="color:${c}">${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%</span>`;
+  }
+
+  function covPill(actual, status) {
+    if (actual == null) return '<span class="dim">—</span>';
+    let ok = true;
+    if (status === 'yellow' && actual > 75) ok = false;
+    if (status === 'red'    && actual > 50) ok = false;
+    if (status === 'black'  && actual > 25) ok = false;
+    if ((status === 'green' || !status) && actual < 100) ok = null;
+    const color = ok === true ? '#4ade80' : ok === false ? '#f87171' : '#fbbf24';
+    const icon  = ok === true ? '✓' : ok === false ? '⚠' : '~';
+    return `<span class="cov-pill" style="background:${color}22;color:${color};">${actual.toFixed(1)}% ${icon}</span>`;
+  }
+
+  function legend() {
+    return `<div class="legend">
+      <span style="color:#4ade80;">🟢 At / above cost basis → sell calls normally at 100%</span>
+      <span style="color:#fbbf24;">🟡 5–15% below → partial coverage 50–75%</span>
+      <span style="color:#f87171;">🔴 15–30% below → light coverage 25–50%</span>
+      <span style="color:#94a3b8;">⚫ 30%+ below → hold, protect recovery upside 0–25%</span>
+    </div>`;
+  }
+
+  function fmtK(v) { return '$' + Math.round(v / 1000) + 'k'; }
+  function sdot(status) {
+    const c = (SM[status] || SM.unknown).color;
+    return `<span style="width:8px;height:8px;border-radius:50%;background:${c};display:inline-block;flex-shrink:0;margin-right:5px;vertical-align:middle;"></span>`;
+  }
+  function colorD(v, dec = 0) {
+    if (v == null) return '<span class="dim">—</span>';
+    const cls = v >= 0 ? 'green' : 'red';
+    return `<span class="${cls}">${d$(v, dec)}</span>`;
+  }
+
+  // ── Deployment Tracker ─────────────────────────────────────────────────────
+
+  function renderDeploymentTracker(td) {
+    const dep = td && td.deployment;
+    if (!dep) { ['dep-vix-check','dep-alert','dep-cards','eff-cards','eff-table'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = '<p class="no-data">No deployment data — run collateral.py</p>'; }); return; }
+
+    const vc  = dep.vix_cash_check || {};
+    const cc  = dep.cc_capacity   || {};
+
+    // VIX cash check left panel
+    const passColor = vc.passes ? '#166534' : '#7f1d1d';
+    const passText  = vc.passes ? '<span class="green">✓ Pass</span>' : '<span class="red">✗ Fail</span>';
+    const cashPctStr = `${Math.round((vc.cash_pct_min||0)*100)}–${Math.round((vc.cash_pct_max||0)*100)}%`;
+    const excStr = (vc.excess_min === vc.excess_max)
+      ? d$(vc.excess_min, 0) : `${fmtK(vc.excess_min)}–${fmtK(vc.excess_max)}`;
+    const ccTotalStr = (cc.total_min === cc.total_max)
+      ? d$(cc.total_min, 0) : `${fmtK(cc.total_min)}–${fmtK(cc.total_max)}`;
+
+    let ccRows = '';
+    for (const t of (cc.by_ticker || [])) {
+      const capStr = t.cap_min === t.cap_max ? d$(t.cap_min, 0) : `${fmtK(t.cap_min)}–${fmtK(t.cap_max)}`;
+      const capCls = t.position_status === 'green' ? 'green' : t.position_status === 'black' ? 'dim' : 'yellow';
+      ccRows += `<div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+        <span>${sdot(t.position_status)}<span class="dim">${t.ticker}</span> <span style="color:#64748b;font-size:11px;">${t.uncovered_shares.toLocaleString()} uncovered</span></span>
+        <span class="${capCls}">${capStr}</span></div>`;
+    }
+
+    const VIX_REF = [
+      ['<12 Extreme Greed', '40–50%'], ['12–15 Greed', '30–40%'],
+      ['15–20 Slight Fear', '20–25%'], ['20–25 Fear', '10–15%'], ['≥30 Extreme Fear', '0–5%'],
+    ];
+    let vixRefRows = '';
+    for (const [label, pct] of VIX_REF) {
+      const cur = vc.zone_name && label.toLowerCase().includes(vc.zone_name.toLowerCase());
+      vixRefRows += cur
+        ? `<div style="display:flex;justify-content:space-between;background:rgba(74,222,128,0.06);padding:0 4px;border-radius:3px;"><span style="color:#4ade80;">→ ${label}</span><span style="color:#4ade80;">${pct} ✓</span></div>`
+        : `<div style="display:flex;justify-content:space-between;"><span class="dim">${label}</span><span>${pct}</span></div>`;
+    }
+
+    document.getElementById('dep-vix-check').innerHTML = `
+      <div class="card" style="border-color:${passColor};">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;">
+          <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;">VIX Cash Check</div>
+          <span style="font-size:11px;color:#64748b;">VIX ${(vc.vix||0).toFixed(1)} · ${vc.zone_name||'—'}</span>
+        </div>
+        <div style="font-size:22px;font-weight:700;margin-bottom:10px;">${passText}</div>
+        <hr class="split-divider"/>
+        <div class="split-row"><span class="dim">Required reserve (${cashPctStr})</span><span>${d$(vc.cash_reserve_min,0)}–${d$(vc.cash_reserve_max,0)}</span></div>
+        <div class="split-row"><span class="dim">Cash on hand (est.)</span><span class="${vc.passes?'green':'red'}">${d$(vc.cash_on_hand,0)}</span></div>
+        <div class="split-row total"><span>Excess above reserve</span><span class="${vc.passes?'green':'red'}">${excStr}</span></div>
+        <hr class="split-divider"/>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">What that excess can do</div>
+        <div class="split-row"><span class="dim">→ New CSPs (cash required)</span><span class="green">${excStr}</span></div>
+        <div class="split-row"><span class="dim">→ CC capacity (uncovered shares)</span><span class="yellow">${ccTotalStr}</span></div>
+        <div style="font-size:11px;color:#475569;margin-top:6px;line-height:1.5;">CC capacity = uncovered share value within position-status limits. No extra cash needed.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="card">
+          <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">VIX Zone Reference — Cash Reserve</div>
+          <div style="font-size:12px;line-height:2.2;">${vixRefRows}</div>
+        </div>
+        <div class="card">
+          <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Uncovered CC Capacity — by Position</div>
+          <div style="font-size:12px;line-height:2.1;">${ccRows||'<span class="dim">No uncovered shares</span>'}
+            <div style="display:flex;justify-content:space-between;border-top:1px solid #1e293b;margin-top:6px;padding-top:6px;font-weight:600;">
+              <span>Total CC capacity</span><span class="yellow">${ccTotalStr}</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    // Action alert
+    const isUnder = dep.gap_min > 0;
+    const gapStr  = `${fmtK(dep.gap_min)}–${fmtK(dep.gap_max)}`;
+    const incStr  = `${d$(dep.missed_income_min,0)}–${d$(dep.missed_income_max,0)}`;
+    document.getElementById('dep-alert').innerHTML = `
+      <div class="action-alert ${isUnder?'warn':'ok'}">
+        <div>
+          <div class="action-alert-title" style="color:${isUnder?'#fbbf24':'#4ade80'};">${isUnder ? '⚠ You are underdeployed given your current position statuses' : '✓ You are deploying within your position-status ceiling'}</div>
+          <div class="action-alert-body">
+            Your positions allow <strong style="color:#e2e8f0;">${fmtK(dep.ceiling_min)}–${fmtK(dep.ceiling_max)}</strong> in responsible deployment.
+            You are at <strong style="color:#fbbf24;">${d$(dep.total_deployed,0)} (${dep.deployed_pct.toFixed(1)}%)</strong>.<br>
+            🟢 Green = 100% · 🟡 Yellow = 50–75% · ⚫ Black = 0% · <strong style="color:#e2e8f0;">${gapStr}</strong> can be responsibly added now.<br>
+            ${isUnder ? `At 1% weekly that's an estimated <strong style="color:#f87171;">${incStr}/week</strong> in missed income.` : 'Keep up the discipline.'}
+          </div>
+        </div>
+        <div class="action-alert-number">
+          <div class="big" style="color:${isUnder?'#f87171':'#4ade80'};">${fmtK(Math.round((dep.gap_min+dep.gap_max)/2))}</div>
+          <div class="label">${isUnder?'to responsibly deploy':'gap to ceiling'}</div>
+        </div>
+      </div>`;
+
+    // Deployment bar
+    const dPct = dep.deployed_pct, cLo = dep.ceiling_pct_min, cHi = dep.ceiling_pct_max;
+    const barColor = dPct < cLo * 0.6 ? '#f87171' : dPct < cLo ? '#fbbf24' : '#4ade80';
+    document.getElementById('dep-bar-labels').style.display = 'flex';
+    document.getElementById('dep-bar-labels').innerHTML = `
+      <span>0%</span>
+      <span>Current: <strong style="color:#fbbf24;">${dPct.toFixed(1)}%</strong></span>
+      <span>Position-status ceiling: <strong style="color:#4ade80;">${cLo.toFixed(1)}–${cHi.toFixed(1)}%</strong></span>
+      <span>100%</span>`;
+    document.getElementById('dep-bar').style.display = 'block';
+    document.getElementById('dep-bar').innerHTML = `
+      <div class="dep-bar-fill" style="width:${Math.min(dPct,100).toFixed(1)}%;background:${barColor};"></div>
+      <div class="dep-target-line" style="left:${cLo.toFixed(1)}%;"></div>
+      <div class="dep-target-line" style="left:${cHi.toFixed(1)}%;background:#22c55e;opacity:0.5;"></div>
+      <div class="dep-target-label" style="left:${((cLo+cHi)/2).toFixed(1)}%;">position ceiling</div>`;
+
+    // 3 stat cards
+    const cap = td.capital || {};
+    const ccVal = dep.total_deployed - (cap.put_collateral || 0);
+    document.getElementById('dep-cards').innerHTML = `
+      <div class="card">
+        <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Currently Deployed</div>
+        <div style="font-size:22px;font-weight:700;" class="yellow">${dep.deployed_pct.toFixed(1)}%</div>
+        <div style="font-size:11px;color:#64748b;margin-top:4px;">${d$(dep.total_deployed,0)} of ${d$(dep.account_balance,0)} account</div>
+        <hr class="split-divider"/>
+        <div class="split-row"><span class="dim">CSP collateral</span><span class="yellow">${d$(cap.put_collateral,0)}</span></div>
+        <div class="split-row"><span class="dim">CC position value</span><span class="yellow">${d$(ccVal,0)}</span></div>
+        <div class="split-row total"><span>Total at risk</span><span class="yellow">${d$(dep.total_deployed,0)}</span></div>
+      </div>
+      <div class="card">
+        <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Position-Status Ceiling</div>
+        <div style="font-size:22px;font-weight:700;" class="green">${fmtK(dep.ceiling_min)}–${fmtK(dep.ceiling_max)}</div>
+        <div style="font-size:11px;color:#64748b;margin-top:4px;">max responsible deployment from statuses</div>
+        <hr class="split-divider"/>
+        <div class="split-row"><span class="dim">🟢 Green (100%)</span><span class="green">${d$(dep.green_total,0)}</span></div>
+        <div class="split-row"><span class="dim">🟡 Yellow (50–75%)</span><span class="yellow">${fmtK(dep.yellow_min)}–${fmtK(dep.yellow_max)}</span></div>
+        ${dep.black_total > 0 ? `<div class="split-row"><span class="dim">⚫ Black (0%)</span><span class="dim">$0</span></div>` : ''}
+        <div class="split-row total"><span>Gap to ceiling</span><span class="red">${fmtK(dep.gap_min)}–${fmtK(dep.gap_max)}</span></div>
+      </div>
+      <div class="card" style="border-color:#854d0e;">
+        <div style="font-size:11px;color:#fbbf24;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Missed Income Estimate</div>
+        <div style="font-size:22px;font-weight:700;" class="red">${d$(dep.missed_income_min,0)}–${d$(dep.missed_income_max,0)}</div>
+        <div style="font-size:11px;color:#64748b;margin-top:4px;">per week at avg 1% weekly return</div>
+        <hr class="split-divider"/>
+        <div class="split-row"><span class="dim">Deployable gap</span><span>${fmtK(dep.gap_min)}–${fmtK(dep.gap_max)}</span></div>
+        <div class="split-row"><span class="dim">× 1% weekly return</span><span></span></div>
+        <div class="split-row total"><span>= weekly missed income</span><span class="red">${incStr}</span></div>
+      </div>`;
+
+    // Effective capital + adjusted goal cards
+    const adjNet  = dep.adjusted_net_goal;
+    const adjGross = dep.adjusted_gross;
+    const fixedGoal = dep.monthly_net_goal;
+    const reduction = dep.goal_reduction;
+    const ceilMid = (dep.ceiling_min + dep.ceiling_max) / 2;
+    const adjRetPct = ceilMid > 0 ? (adjGross / ceilMid * 100).toFixed(2) : '—';
+    const adjColor = adjNet >= fixedGoal * 0.9 ? 'green' : adjNet >= fixedGoal * 0.6 ? 'yellow' : 'red';
+
+    let posRows = '';
+    for (const p of (dep.per_position || [])) {
+      const dStr = p.deploy_min === p.deploy_max ? d$(p.deploy_min, 0) : `${fmtK(p.deploy_min)}–${fmtK(p.deploy_max)}`;
+      const dCls = p.status === 'green' ? 'green' : p.status === 'black' ? 'dim' : 'yellow';
+      const rowBg = p.status === 'green' ? 'rgba(74,222,128,0.03)' : p.status === 'yellow' ? 'rgba(251,191,36,0.03)' : p.status === 'black' ? 'rgba(148,163,184,0.03)' : '';
+      const depPct = p.status === 'green' ? '100%' : p.status === 'yellow' ? '50–75%' : p.status === 'red' ? '25–50%' : '0%';
+      posRows += `<tr style="background:${rowBg};">
+        <td>${sdot(p.status)}<span style="color:${(SM[p.status]||SM.unknown).color};font-weight:600;">${p.status.charAt(0).toUpperCase()+p.status.slice(1)}</span></td>
+        <td><strong>${p.ticker}</strong></td><td>${p.shares.toLocaleString()}</td>
+        <td style="color:#c4b5fd;">${d$(p.value,0)}</td>
+        <td style="color:${p.status==='green'?'#4ade80':p.status==='black'?'#94a3b8':'#fbbf24'};">${depPct}</td>
+        <td class="${dCls}">${dStr}</td>
+        <td class="dim" style="font-size:11px;">${p.note}</td>
+      </tr>`;
+    }
+    posRows += `<tr style="background:rgba(74,222,128,0.03);">
+      <td colspan="3" class="dim">Cash available for CSPs</td>
+      <td style="color:#c4b5fd;">${d$(dep.deployable_cash,0)}</td>
+      <td class="green">100%</td><td class="green">${d$(dep.deployable_cash,0)}</td>
+      <td class="dim" style="font-size:11px;">After VIX cash buffer deducted</td>
+    </tr>
+    <tr class="total-row"><td colspan="5">Total responsibly deployable</td>
+      <td class="green">${fmtK(dep.ceiling_min)}–${fmtK(dep.ceiling_max)}</td><td></td>
+    </tr>`;
+
+    document.getElementById('eff-cards').innerHTML = `
+      <div class="card">
+        <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Responsibly Deployable Capital</div>
+        <div style="font-size:22px;font-weight:700;" class="green">${fmtK(dep.ceiling_min)}–${fmtK(dep.ceiling_max)}</div>
+        <div style="font-size:11px;color:#64748b;margin-top:4px;">position-status ceiling applied</div>
+        <hr class="split-divider"/>
+        <div class="split-row"><span class="dim">🟢 Green (100%)</span><span class="green">${d$(dep.green_total,0)}</span></div>
+        <div class="split-row"><span class="dim">🟡 Yellow (50–75%)</span><span class="yellow">${fmtK(dep.yellow_min)}–${fmtK(dep.yellow_max)}</span></div>
+        ${dep.black_total > 0 ? `<div class="split-row"><span class="dim">⚫ Black (0%)</span><span class="dim">$0</span></div>` : ''}
+        <div class="split-row"><span class="dim">Cash for CSPs</span><span class="green">${d$(dep.deployable_cash,0)}</span></div>
+        <div class="split-row total"><span>= Total responsibly deployable</span><span class="green">${fmtK(dep.ceiling_min)}–${fmtK(dep.ceiling_max)}</span></div>
+      </div>
+      <div class="card">
+        <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Adjusted Monthly Goal</div>
+        <div style="font-size:22px;font-weight:700;" class="${adjColor}">${d$(adjNet,0)}</div>
+        <div style="font-size:11px;color:#64748b;margin-top:4px;">vs fixed goal of ${d$(fixedGoal,0)}</div>
+        <hr class="split-divider"/>
+        <div class="split-row"><span class="dim">Fixed monthly net goal</span><span>${d$(fixedGoal,0)}</span></div>
+        ${reduction > 0 ? `<div class="split-row"><span class="dim">Reduction from limited statuses</span><span class="red">−${d$(reduction,0)}</span></div>` : ''}
+        <div class="split-row total"><span>Realistic target this month</span><span class="${adjColor}">${d$(adjNet,0)}</span></div>
+        <div style="font-size:11px;color:#475569;margin-top:10px;">Gap to fixed goal = ${d$(reduction,0)} · requires new positions or accepting a lower month</div>
+      </div>
+      <div class="card">
+        <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Required Return on Deployable</div>
+        <div style="font-size:22px;font-weight:700;color:#c4b5fd;">${adjRetPct}%</div>
+        <div style="font-size:11px;color:#64748b;margin-top:4px;">to hit adjusted ${d$(adjNet,0)} target</div>
+        <hr class="split-divider"/>
+        <div class="split-row"><span class="dim">On fixed goal</span><span>${dep.req_return_rate_pct.toFixed(2)}%</span></div>
+        <div class="split-row"><span class="dim">On adjusted target</span><span style="color:#c4b5fd;">${adjRetPct}%</span></div>
+      </div>`;
+
+    document.getElementById('eff-table').innerHTML = `
+      <table>
+        <thead><tr>
+          <th>Status</th><th>Ticker</th><th>Shares</th>
+          <th>Position Value</th><th>Deploy %</th><th>Deployable Amount</th><th>Notes</th>
+        </tr></thead>
+        <tbody>${posRows}</tbody>
+      </table>
+      <p class="meta-note">Deploy % = position status coverage ratio. Yellow = 50–75% for covered calls. Black = 0% (don't add exposure).</p>`;
+  }
+
+  function renderHistory(td) {
+    const monthly = td.monthly || [];
+    if (!monthly.length) {
+      document.getElementById('history-container').innerHTML = '<p class="no-data">No monthly history</p>';
+      return;
+    }
+    const maxNet = Math.max(...monthly.map(m => Math.abs(m.net || 0)), 1);
+    let rows = `<div class="month-hist-row month-hist-header">
+      <span>Month</span><span>Net Premium</span><span style="text-align:right;">Net</span><span style="text-align:right;">STOs</span>
+    </div>`;
+    for (const m of monthly) {
+      const net = m.net || 0;
+      const pct = Math.min(Math.abs(net) / maxNet * 100, 100);
+      const color = net >= 5000 ? '#4ade80' : net >= 2000 ? '#fbbf24' : '#f87171';
+      const isCur = m.month === (td.current_month && td.current_month.label);
+      rows += `<div class="month-hist-row" style="${isCur?'background:rgba(251,191,36,0.04);':''}">
+        <span style="color:${isCur?'#fbbf24':'#64748b'};">${m.month}</span>
+        <span><div class="mini-bar" style="width:${pct.toFixed(0)}%;background:${color};"></div></span>
+        <span style="text-align:right;color:${color};">${d$(net,0)}</span>
+        <span style="text-align:right;color:#64748b;font-size:11px;">${m.count}</span>
+      </div>`;
+    }
+    document.getElementById('history-container').innerHTML = `
+      <div style="max-width:580px;">${rows}</div>
+      <p class="meta-note">Net premium per month from trade history. Higher-income months correlate with fuller deployment.</p>`;
+  }
+
+  // ── Render functions ───────────────────────────────────────────────────────
+
+  function renderStatusBar(holdings) {
+    const counts = { green: 0, yellow: 0, red: 0, black: 0 };
+    for (const h of holdings) {
+      if (h.shares > 0 && counts[h.position_status] !== undefined) counts[h.position_status]++;
+    }
+    document.getElementById('count-green').textContent  = counts.green;
+    document.getElementById('count-yellow').textContent = counts.yellow;
+    document.getElementById('count-red').textContent    = counts.red;
+    document.getElementById('count-black').textContent  = counts.black;
+  }
+
+  function renderHoldings(holdings) {
+    const rows = holdings.filter(h => h.shares > 0);
+    if (!rows.length) {
+      document.getElementById('holdings-container').innerHTML = '<p class="no-data">No holdings found</p>';
+      return;
+    }
+    rows.sort((a, b) => (b.est_value || 0) - (a.est_value || 0));
+    let body = '';
+    let totValue = 0;
+    for (const h of rows) {
+      totValue += h.est_value || 0;
+      const m = SM[h.position_status] || SM.unknown;
+      body += `<tr class="${m.rowClass}">
+        <td>${statusCell(h.position_status)}</td>
+        <td><strong>${h.ticker}</strong></td>
+        <td>${h.shares.toLocaleString()}</td>
+        <td class="dim">${d$(h.cost_basis)}</td>
+        <td class="dim">${d$(h.last_price)}</td>
+        <td>${gapCell(h.gap_pct)}</td>
+        <td class="purple">${d$(h.est_value, 0)}</td>
+      </tr>`;
+    }
+    body += `<tr class="total-row">
+      <td colspan="6">Total Holdings Value</td>
+      <td class="purple">${d$(totValue, 0)}</td>
+    </tr>`;
+    document.getElementById('holdings-container').innerHTML = `
+      ${legend()}
+      <table>
+        <thead><tr><th>Status</th><th>Ticker</th><th>Shares</th><th>Cost Basis</th><th>Price</th><th>Gap %</th><th>Est. Value</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+      <p class="meta-note">Prices from last scanner run. Gap% = (price − cost basis) / cost basis.</p>`;
+  }
+
+  function renderCalls(td) {
+    const exposure = td.call_exposure || [];
+    const openCalls = td.open_calls || [];
+    if (!exposure.length) {
+      document.getElementById('calls-container').innerHTML = '<p class="no-data">No covered call positions</p>';
+      return;
+    }
+    // Build CC contracts per ticker for the open calls header list
+    let openList = '';
+    for (const c of openCalls) {
+      openList += `<span style="color:#94a3b8;margin-right:16px;">${c.ticker} ${c.expiry.slice(5)} $${c.strike} · ${c.contracts}c</span>`;
+    }
+
+    let body = '';
+    let totValue = 0;
+    for (const e of exposure) {
+      totValue += e.position_value || 0;
+      const m = SM[e.position_status] || SM.unknown;
+      const shortFlag = e.short_shares ? ' <span class="red">⚠ short</span>' : '';
+      body += `<tr class="${m.rowClass}">
+        <td>${statusCell(e.position_status)}</td>
+        <td><strong>${e.ticker}</strong>${shortFlag}</td>
+        <td>${e.shares_held.toLocaleString()}</td>
+        <td>${e.cc_contracts} (${e.shares_in_cc} shares)</td>
+        <td class="dim">${d$(e.cost_basis)}</td>
+        <td class="dim">${d$(e.last_price)}</td>
+        <td>${gapCell(e.gap_pct)}</td>
+        <td class="dim">${e.suggested_coverage || '—'}</td>
+        <td>${covPill(e.actual_coverage, e.position_status)}</td>
+        <td class="purple">${d$(e.position_value, 0)}</td>
+      </tr>`;
+    }
+    body += `<tr class="total-row">
+      <td colspan="9">Total CC Position Value</td>
+      <td class="purple">${d$(totValue, 0)}</td>
+    </tr>`;
+    document.getElementById('calls-container').innerHTML = `
+      ${legend()}
+      ${openList ? `<div style="margin-bottom:12px;font-size:12px;">${openList}</div>` : ''}
+      <table>
+        <thead><tr>
+          <th>Status</th><th>Ticker</th><th>Shares Held</th><th>CC Open</th>
+          <th>Cost Basis</th><th>Price</th><th>Gap %</th>
+          <th>Suggested Cov</th><th>Actual Cov</th><th>Position Value</th>
+        </tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+      <p class="meta-note">Actual Coverage = shares in open CCs / shares held. ✓ within range · ~ slightly under · ⚠ outside suggested range.</p>`;
+  }
+
+  function renderPuts(td) {
+    const rows = td.open_puts || [];
+    if (!rows.length) {
+      document.getElementById('puts-container').innerHTML = '<p class="no-data">No open put positions</p>';
+      return;
+    }
+    let body = '';
+    let totalCollateral = 0;
+    for (const r of rows) {
+      totalCollateral += r.collateral || 0;
+      const bufColor = r.put_status === 'green' ? '#4ade80'
+                     : r.put_status === 'yellow' ? '#fbbf24'
+                     : '#f87171';
+      const bufStr = r.buffer_pct != null
+        ? `<span style="color:${bufColor}">${r.buffer_pct >= 0 ? '+' : ''}${r.buffer_pct.toFixed(1)}%${r.buffer_pct < 0 ? ' ITM' : ''}</span>`
+        : '<span class="dim">—</span>';
+      const m = SM[r.put_status] || SM.unknown;
+      body += `<tr class="${m.rowClass}">
+        <td>${statusCell(r.put_status)}</td>
+        <td>${r.expiry}</td>
+        <td><strong>${r.ticker}</strong></td>
+        <td>${r.contracts}</td>
+        <td>${d$(r.strike)}</td>
+        <td class="dim">${r.current_price != null ? d$(r.current_price) : '—'}</td>
+        <td>${bufStr}</td>
+        <td class="yellow">${d$(r.collateral, 0)}</td>
+      </tr>`;
+    }
+    body += `<tr class="total-row">
+      <td colspan="7">Total Collateral</td>
+      <td class="yellow">${d$(totalCollateral, 0)}</td>
+    </tr>`;
+    document.getElementById('puts-container').innerHTML = `
+      <div class="legend">
+        <span style="color:#4ade80;">🟢 Buffer ≥15% — safe</span>
+        <span style="color:#fbbf24;">🟡 Buffer 5–15% — watching</span>
+        <span style="color:#f87171;">🔴 Buffer 0–5% — assignment risk</span>
+        <span style="color:#94a3b8;">⚫ Negative buffer — in the money</span>
+      </div>
+      <table>
+        <thead><tr><th>Status</th><th>Expiry</th><th>Ticker</th><th>Contracts</th><th>Strike</th><th>Price</th><th>Buffer</th><th>Collateral</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+      <p class="meta-note">Buffer = current price − strike. Negative = put is in the money (ITM). Prices from last scanner run.</p>`;
+  }
+
+  function renderPnl(td) {
+    const rows = (td.position_pnl || []);
+    if (!rows.length) {
+      document.getElementById('pnl-container').innerHTML = '<p class="no-data">No position P&L data — run collateral.py</p>';
+      return;
+    }
+    const VERDICT_COLOR = {
+      'Working':                '#4ade80',
+      'Premium covering loss':  '#4ade80',
+      'Premium offsetting loss':'#fbbf24',
+      'Options not covering loss': '#f87171',
+      'unknown': '#475569',
+    };
+    const VERDICT_ICON = {
+      'Working':                '✓ Working',
+      'Premium covering loss':  '✓ Premium covering loss',
+      'Premium offsetting loss':'~ Premium offsetting loss',
+      'Options not covering loss': '⚠ Options not covering loss',
+      'unknown': '—',
+    };
+    let body = '';
+    let totUnrealized = 0, totMonth = 0, totYtd = 0, totTotal = 0;
+    for (const r of rows) {
+      const m = SM[r.position_status] || SM.unknown;
+      const unrHtml = r.unrealized_pnl != null
+        ? `<span style="color:${r.unrealized_pnl >= 0 ? '#4ade80' : '#f87171'}">${r.unrealized_pnl >= 0 ? '+' : ''}${d$(r.unrealized_pnl, 0)}</span>`
+        : '<span class="dim">—</span>';
+      const monthHtml = r.month_net
+        ? `<span style="color:${r.month_net >= 0 ? '#4ade80' : '#f87171'}">${r.month_net >= 0 ? '+' : ''}${d$(r.month_net, 0)}</span>`
+        : '<span class="dim">—</span>';
+      const ytdHtml = `<span style="color:#4ade80">+${d$(r.ytd_net, 0)}</span>`;
+      const totHtml = r.total_pnl != null
+        ? `<span style="color:${r.total_pnl >= 0 ? '#4ade80' : '#f87171'};font-weight:600">${r.total_pnl >= 0 ? '+' : ''}${d$(r.total_pnl, 0)}</span>`
+        : '<span class="dim">—</span>';
+      const vColor = VERDICT_COLOR[r.verdict] || '#475569';
+      const vText  = VERDICT_ICON[r.verdict]  || r.verdict;
+      body += `<tr class="${m.rowClass}">
+        <td>${statusCell(r.position_status)}</td>
+        <td><strong>${r.ticker}</strong></td>
+        <td>${r.shares.toLocaleString()}</td>
+        <td>${unrHtml}</td>
+        <td>${monthHtml}</td>
+        <td>${ytdHtml}</td>
+        <td>${totHtml}</td>
+        <td><span style="color:${vColor};font-size:11px;">${vText}</span></td>
+      </tr>`;
+      if (r.unrealized_pnl != null) totUnrealized += r.unrealized_pnl;
+      totMonth += r.month_net;
+      totYtd   += r.ytd_net;
+      if (r.total_pnl != null) totTotal += r.total_pnl;
+    }
+    const totUnrHtml = `<span style="color:${totUnrealized >= 0 ? '#4ade80' : '#f87171'}">${totUnrealized >= 0 ? '+' : ''}${d$(totUnrealized, 0)}</span>`;
+    const totMoHtml  = `<span style="color:${totMonth >= 0 ? '#4ade80' : '#f87171'}">${totMonth >= 0 ? '+' : ''}${d$(totMonth, 0)}</span>`;
+    const totYtdHtml = `<span style="color:#4ade80">+${d$(totYtd, 0)}</span>`;
+    const totTotHtml = `<span style="color:${totTotal >= 0 ? '#4ade80' : '#f87171'};font-weight:700">${totTotal >= 0 ? '+' : ''}${d$(totTotal, 0)}</span>`;
+    body += `<tr class="total-row">
+      <td colspan="3">Total</td>
+      <td>${totUnrHtml}</td>
+      <td>${totMoHtml}</td>
+      <td>${totYtdHtml}</td>
+      <td>${totTotHtml}</td>
+      <td></td>
+    </tr>`;
+    document.getElementById('pnl-container').innerHTML = `
+      <table>
+        <thead><tr>
+          <th>Status</th><th>Ticker</th><th>Shares</th>
+          <th>Unrealized Stock P&amp;L</th><th>This Month Net</th>
+          <th>YTD Net Premium</th><th>Total Position P&amp;L</th><th>Verdict</th>
+        </tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+      <p class="meta-note">Unrealized P&L = (price − cost basis) × shares. YTD = full CSV options history. Total = unrealized stock + YTD options. Only tickers with held shares shown.</p>`;
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+
+  async function init() {
+    try {
+      const td = await fetch('/api/trade-data').then(r => r.json());
+      renderDeploymentTracker(td);
+      renderStatusBar(td.holdings || []);
+      renderHoldings(td.holdings || []);
+      renderCalls(td);
+      renderPnl(td);
+      renderPuts(td);
+      renderHistory(td);
+    } catch (e) {
+      document.querySelectorAll('.loading').forEach(el => {
+        el.textContent = 'Error loading data — is the server running?';
+      });
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>

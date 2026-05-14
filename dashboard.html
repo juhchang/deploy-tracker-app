@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Options Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0f1117;
+      color: #e2e8f0;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      padding: 24px;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      color: #64748b;
+      font-size: 12px;
+      margin-bottom: 28px;
+    }
+
+    h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    section { margin-bottom: 36px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      padding: 6px 12px;
+      background: #1e293b;
+      color: #94a3b8;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 7px 12px;
+      border-bottom: 1px solid #1a2235;
+      white-space: nowrap;
+    }
+
+    tr:hover td { background: #131929; }
+
+    .green  { color: #4ade80; }
+    .red    { color: #f87171; }
+    .yellow { color: #fbbf24; }
+    .dim    { color: #64748b; }
+    .badge  {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-put  { background: #1e3a5f; color: #60a5fa; }
+    .badge-call { background: #2d1b69; color: #a78bfa; }
+    .badge-both { background: #1e3b2f; color: #4ade80; }
+
+    .rank-bar {
+      display: inline-block;
+      width: 60px;
+      height: 8px;
+      background: #1e293b;
+      border-radius: 4px;
+      vertical-align: middle;
+      margin-right: 6px;
+      overflow: hidden;
+    }
+    .rank-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    .bb-bar {
+      display: inline-block;
+      width: 80px;
+      height: 8px;
+      background: #1e293b;
+      border-radius: 4px;
+      vertical-align: middle;
+      margin-right: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+    .bb-fill {
+      height: 100%;
+      border-radius: 4px;
+      position: absolute;
+    }
+    .bb-midline {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: 1px;
+      height: 100%;
+      background: #475569;
+    }
+
+    .no-data {
+      color: #334155;
+      padding: 20px 12px;
+    }
+
+    .meta-note {
+      font-size: 11px;
+      color: #475569;
+      margin-top: 10px;
+    }
+
+    .generated {
+      font-size: 11px;
+      color: #334155;
+      margin-bottom: 16px;
+    }
+
+    .warning {
+      background: #1c1a0e;
+      border: 1px solid #713f12;
+      border-radius: 6px;
+      padding: 12px 16px;
+      color: #fbbf24;
+      font-size: 12px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Options Dashboard</h1>
+<p class="subtitle">Robinhood income tracking + live trade opportunities</p>
+
+<div id="vix-bar" style="display:none;align-items:center;gap:20px;background:#1e293b;border-radius:8px;padding:14px 20px;margin-bottom:28px;border-left:4px solid #64748b">
+  <div>
+    <span style="color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.08em">VIX</span><br>
+    <span id="vix-value" style="font-size:28px;font-weight:700;line-height:1.1"></span>
+  </div>
+  <div>
+    <span id="vix-label" style="font-size:13px;font-weight:600"></span><br>
+    <span id="vix-desc" style="font-size:11px;color:#64748b"></span>
+  </div>
+  <div style="flex:1"></div>
+  <div id="vix-gauge" style="display:flex;align-items:flex-end;gap:3px;height:32px">
+    <!-- bars rendered by JS -->
+  </div>
+</div>
+
+<!-- ------------------------------------------------------------------ -->
+<!-- SECTION: Trade Opportunities (from scanner_results.json)            -->
+<!-- ------------------------------------------------------------------ -->
+<section id="scanner-section">
+  <h2>Trade Opportunities — ~0.25 Delta</h2>
+  <p class="generated" id="scanner-generated"></p>
+  <div id="scanner-table-container"><p class="no-data">Loading scanner data…</p></div>
+  <p class="meta-note">
+    HV Rank: 52-week realized volatility rank (proxy for IV rank). 100 = historically expensive options — better premium.<br>
+    BB Position: where price sits in the 20-day Bollinger Band. &lt;35% = near lower (favor puts), &gt;65% = near upper (favor calls).<br>
+    Sorted by HV Rank descending. Refresh by running: <code>python3 scripts/scan_options.py</code>
+  </p>
+</section>
+
+<!-- ------------------------------------------------------------------ -->
+<!-- SECTION: Sell Put Scanner (all tickers, puts only)                 -->
+<!-- ------------------------------------------------------------------ -->
+<section id="put-scanner-section">
+  <h2>Sell Put Scanner — All Tickers</h2>
+  <p class="generated" id="put-scanner-generated"></p>
+  <div id="put-scanner-table-container"><p class="no-data">Loading…</p></div>
+  <p class="meta-note">
+    Shows the best annualized put for every ticker regardless of BB position or HV rank.<br>
+    Sorted by Ann% descending. BB Buffer shows lower band price — green = strike safely below band, red = strike inside band.
+  </p>
+</section>
+
+<!-- ------------------------------------------------------------------ -->
+<!-- SECTION: Robinhood data (populated by parse_trades.py etc.)         -->
+<!-- ------------------------------------------------------------------ -->
+<section id="summary-section">
+  <h2>Current Period Summary</h2>
+  <div id="summary-container"><p class="no-data">Run parse_trades.py + calculate_premium.py to populate.</p></div>
+</section>
+
+<section id="monthly-section">
+  <h2>YTD Premium by Month</h2>
+  <div id="monthly-container"><p class="no-data">Run parse_trades.py + calculate_premium.py to populate.</p></div>
+</section>
+
+<section id="ticker-section">
+  <h2>YTD Net Premium by Ticker</h2>
+  <div id="ticker-container"><p class="no-data">Run parse_trades.py + calculate_premium.py to populate.</p></div>
+</section>
+
+<section id="puts-section">
+  <h2>Open Put Positions (Cash Collateral)</h2>
+  <div id="puts-container"><p class="no-data">Run collateral.py to populate.</p></div>
+</section>
+
+<section id="calls-section">
+  <h2>Open Call Positions (Covered Calls)</h2>
+  <div id="calls-container"><p class="no-data">Run collateral.py to populate.</p></div>
+</section>
+
+<section id="holdings-section">
+  <h2>Estimated Share Holdings</h2>
+  <div id="holdings-container"><p class="no-data">Run parse_trades.py to populate.</p></div>
+</section>
+
+<section id="capital-section">
+  <h2>Capital Allocation Estimate</h2>
+  <div id="capital-container"><p class="no-data">Run collateral.py to populate.</p></div>
+</section>
+
+<section id="assignments-section">
+  <h2>Assignment History</h2>
+  <div id="assignments-container"><p class="no-data">Run parse_trades.py to populate.</p></div>
+</section>
+
+<!-- Scanner data injected by scan_options.py — works from file:// -->
+<script src="output/scanner_data.js" onerror="window.SCANNER_DATA=null"></script>
+<!-- Trade data injected by collateral.py — works from file:// -->
+<script src="output/trade_data.js" onerror="window.TRADE_DATA=null"></script>
+
+<!-- ------------------------------------------------------------------ -->
+<!-- Scanner rendering logic                                             -->
+<!-- ------------------------------------------------------------------ -->
+<script>
+  function hvRankColor(rank) {
+    if (rank === null || rank === undefined) return '#64748b';
+    if (rank >= 75) return '#4ade80';
+    if (rank >= 50) return '#fbbf24';
+    if (rank >= 25) return '#fb923c';
+    return '#f87171';
+  }
+
+  function bbColor(pct) {
+    if (pct === null || pct === undefined) return '#64748b';
+    if (pct <= 35) return '#60a5fa';
+    if (pct >= 65) return '#f87171';
+    return '#fbbf24';
+  }
+
+  function bbBufferCell(r) {
+    const buf = r.bb_buffer;
+    const bufPct = r.bb_buffer_pct;
+    if (buf == null) return '<span class="dim">—</span>';
+    const sign = buf >= 0 ? '+' : '';
+    const absPct = Math.abs(bufPct);
+    const bandPrice = r.type === 'Put' ? r.bb_lower : r.bb_upper;
+    let color, icon;
+    if (buf > 0 && absPct >= 1) {
+      color = '#4ade80'; icon = '✓';
+    } else if (buf >= 0) {
+      color = '#fbbf24'; icon = '~';
+    } else {
+      color = '#f87171'; icon = '⚠';
+    }
+    const priceStr = bandPrice != null ? `$${bandPrice.toFixed(2)}` : '—';
+    return `<span style="color:${color}">${icon} ${priceStr} (${sign}${bufPct.toFixed(1)}%)</span>`;
+  }
+
+  function fmt(v, prefix = '$', decimals = 2) {
+    if (v === null || v === undefined) return '<span class="dim">—</span>';
+    return prefix + Number(v).toFixed(decimals);
+  }
+
+  function renderScanner(data) {
+    const results = data.results || [];
+    const generated = data.generated ? new Date(data.generated).toLocaleString() : '';
+    document.getElementById('scanner-generated').textContent = `Last scan: ${generated}`;
+
+    if (!results.length) {
+      document.getElementById('scanner-table-container').innerHTML =
+        '<p class="no-data">No results. Run: python3 scripts/scan_options.py</p>';
+      return;
+    }
+
+    let html = `<table>
+      <thead><tr>
+        <th>Ticker</th>
+        <th>Price</th>
+        <th>BB Position</th>
+        <th>Side</th>
+        <th>Expiry</th>
+        <th>DTE</th>
+        <th>Type</th>
+        <th>Strike</th>
+        <th>Delta</th>
+        <th>Bid</th>
+        <th>Ask</th>
+        <th>Mid</th>
+        <th>Ret%</th>
+        <th>Ann%</th>
+        <th>BB Buffer</th>
+        <th>IV%</th>
+        <th>HV Rank</th>
+        <th>OI</th>
+        <th>Vol</th>
+      </tr></thead><tbody>`;
+
+    for (const r of results) {
+      const rank = r.hv_rank;
+      const rankColor = hvRankColor(rank);
+      const rankPct = rank !== null ? Math.min(rank, 100) : 0;
+      const rankBar = `<span class="rank-bar"><span class="rank-fill" style="width:${rankPct}%;background:${rankColor}"></span></span>`;
+      const rankVal = rank !== null ? `${rankBar}<span style="color:${rankColor}">${rank.toFixed(0)}</span>` : '<span class="dim">—</span>';
+
+      const bbPct = r.bb_pos_pct;
+      const bbCol = bbColor(bbPct);
+      const bbBar = bbPct !== null
+        ? `<span class="bb-bar"><span class="bb-fill" style="left:${Math.min(bbPct, 100)}%;width:4px;background:${bbCol}"></span><span class="bb-midline"></span></span>`
+        : '';
+      const bbVal = bbPct !== null ? `${bbBar}<span style="color:${bbCol}">${bbPct.toFixed(0)}%</span>` : '<span class="dim">—</span>';
+
+      const typeClass = r.type === 'Put' ? 'badge-put' : 'badge-call';
+      const sideClass = r.suggested === 'Put' ? 'badge-put' : r.suggested === 'Call' ? 'badge-call' : 'badge-both';
+      const deltaColor = r.type === 'Put' ? '#60a5fa' : '#a78bfa';
+
+      const ivVal = r.iv_pct !== null && r.iv_pct !== undefined
+        ? `<span style="color:${r.iv_pct > 80 ? '#4ade80' : r.iv_pct > 50 ? '#fbbf24' : '#e2e8f0'}">${r.iv_pct.toFixed(1)}%</span>`
+        : '<span class="dim">—</span>';
+
+      const dteColor = r.dte <= 10 ? '#fbbf24' : '#e2e8f0';
+
+      html += `<tr>
+        <td><strong>${r.ticker}</strong></td>
+        <td class="dim">${fmt(r.price)}</td>
+        <td>${bbVal}</td>
+        <td><span class="badge ${sideClass}">${r.suggested}</span></td>
+        <td>${r.expiry}</td>
+        <td><span style="color:${dteColor}">${r.dte}</span></td>
+        <td><span class="badge ${typeClass}">${r.type}</span></td>
+        <td><strong>${fmt(r.strike)}</strong></td>
+        <td><span style="color:${deltaColor}">${r.delta !== null ? r.delta.toFixed(3) : '—'}</span></td>
+        <td class="dim">${fmt(r.bid)}</td>
+        <td class="dim">${fmt(r.ask)}</td>
+        <td class="green">${fmt(r.mid)}</td>
+        <td><span class="green">${r.pct_return != null ? r.pct_return.toFixed(2) + '%' : '—'}</span></td>
+        <td><span class="green">${r.ann_return != null ? r.ann_return.toFixed(1) + '%' : '—'}</span></td>
+        <td>${bbBufferCell(r)}</td>
+        <td>${ivVal}</td>
+        <td>${rankVal}</td>
+        <td class="dim">${(r.open_interest || 0).toLocaleString()}</td>
+        <td class="dim">${(r.volume || 0).toLocaleString()}</td>
+      </tr>`;
+    }
+
+    html += '</tbody></table>';
+    document.getElementById('scanner-table-container').innerHTML = html;
+  }
+
+  function renderVix(vix) {
+    if (vix == null) return;
+    const bar = document.getElementById('vix-bar');
+    bar.style.display = 'flex';
+
+    let color, label, desc, borderColor;
+    if (vix < 15) {
+      color = '#4ade80'; label = 'LOW'; borderColor = '#4ade80';
+      desc = 'Options cheap — premium is thin';
+    } else if (vix < 20) {
+      color = '#a3e635'; label = 'NORMAL'; borderColor = '#a3e635';
+      desc = 'Average conditions';
+    } else if (vix < 25) {
+      color = '#fbbf24'; label = 'ELEVATED'; borderColor = '#fbbf24';
+      desc = 'Good premium — mild fear in market';
+    } else if (vix < 30) {
+      color = '#fb923c'; label = 'HIGH'; borderColor = '#fb923c';
+      desc = 'Rich premium — notable fear, sell carefully';
+    } else {
+      color = '#f87171'; label = 'EXTREME'; borderColor = '#f87171';
+      desc = 'Very rich premium — high risk, wide moves expected';
+    }
+
+    bar.style.borderLeftColor = borderColor;
+    document.getElementById('vix-value').style.color = color;
+    document.getElementById('vix-value').textContent = vix.toFixed(2);
+    document.getElementById('vix-label').style.color = color;
+    document.getElementById('vix-label').textContent = label;
+    document.getElementById('vix-desc').textContent = desc;
+
+    // Mini bar gauge: 5 bars representing <15, 15-20, 20-25, 25-30, >30
+    const thresholds = [15, 20, 25, 30, 40];
+    const colors = ['#4ade80', '#a3e635', '#fbbf24', '#fb923c', '#f87171'];
+    const gauge = document.getElementById('vix-gauge');
+    gauge.innerHTML = thresholds.map((t, i) => {
+      const active = vix >= (i === 0 ? 0 : thresholds[i-1]) && vix < t || (i === 4 && vix >= 30);
+      const h = 8 + i * 5;
+      return `<div style="width:10px;height:${h}px;background:${active ? colors[i] : '#334155'};border-radius:2px;transition:background .3s"></div>`;
+    }).join('');
+  }
+
+  function renderPutScanner(data) {
+    const results = (data.put_results || []);
+    const generated = data.generated ? new Date(data.generated).toLocaleString() : '';
+    document.getElementById('put-scanner-generated').textContent = `Last scan: ${generated}`;
+
+    if (!results.length) {
+      document.getElementById('put-scanner-table-container').innerHTML =
+        '<p class="no-data">No put data. Run: python3 scripts/scan_options.py</p>';
+      return;
+    }
+
+    let html = `<table>
+      <thead><tr>
+        <th>Ticker</th>
+        <th>Price</th>
+        <th>Expiry</th>
+        <th>DTE</th>
+        <th>Strike</th>
+        <th>Delta</th>
+        <th>Bid</th>
+        <th>Ask</th>
+        <th>Mid</th>
+        <th>Ret%</th>
+        <th>Ann%</th>
+        <th>BB Lower</th>
+        <th>BB Buffer</th>
+        <th>IV%</th>
+        <th>HV Rank</th>
+      </tr></thead><tbody>`;
+
+    for (const r of results) {
+      const rank = r.hv_rank;
+      const rankColor = hvRankColor(rank);
+      const rankPct = rank !== null ? Math.min(rank, 100) : 0;
+      const rankBar = `<span class="rank-bar"><span class="rank-fill" style="width:${rankPct}%;background:${rankColor}"></span></span>`;
+      const rankVal = rank !== null ? `${rankBar}<span style="color:${rankColor}">${rank.toFixed(0)}</span>` : '<span class="dim">—</span>';
+
+      const ivVal = r.iv_pct !== null && r.iv_pct !== undefined
+        ? `<span style="color:${r.iv_pct > 80 ? '#4ade80' : r.iv_pct > 50 ? '#fbbf24' : '#e2e8f0'}">${r.iv_pct.toFixed(1)}%</span>`
+        : '<span class="dim">—</span>';
+
+      const dteColor = r.dte <= 10 ? '#fbbf24' : '#e2e8f0';
+      const bbLower = r.bb_lower != null ? `$${r.bb_lower.toFixed(2)}` : '<span class="dim">—</span>';
+
+      html += `<tr>
+        <td><strong>${r.ticker}</strong></td>
+        <td class="dim">$${r.price.toFixed(2)}</td>
+        <td>${r.expiry}</td>
+        <td><span style="color:${dteColor}">${r.dte}</span></td>
+        <td><strong>$${r.strike.toFixed(2)}</strong></td>
+        <td><span style="color:#60a5fa">${r.delta != null ? r.delta.toFixed(3) : '—'}</span></td>
+        <td class="dim">$${r.bid.toFixed(2)}</td>
+        <td class="dim">$${r.ask.toFixed(2)}</td>
+        <td class="green">$${r.mid.toFixed(2)}</td>
+        <td><span class="green">${r.pct_return != null ? r.pct_return.toFixed(2) + '%' : '—'}</span></td>
+        <td><span class="green">${r.ann_return != null ? r.ann_return.toFixed(1) + '%' : '—'}</span></td>
+        <td class="dim">${bbLower}</td>
+        <td>${bbBufferCell(r)}</td>
+        <td>${ivVal}</td>
+        <td>${rankVal}</td>
+      </tr>`;
+    }
+
+    html += '</tbody></table>';
+    document.getElementById('put-scanner-table-container').innerHTML = html;
+  }
+
+  if (typeof SCANNER_DATA !== 'undefined' && SCANNER_DATA) {
+    renderVix(SCANNER_DATA.vix);
+    renderScanner(SCANNER_DATA);
+    renderPutScanner(SCANNER_DATA);
+  } else {
+    document.getElementById('scanner-table-container').innerHTML =
+      '<p class="no-data">No data. Run: python3 scripts/scan_options.py</p>';
+    document.getElementById('put-scanner-table-container').innerHTML =
+      '<p class="no-data">No data. Run: python3 scripts/scan_options.py</p>';
+  }
+</script>
+
+<!-- ------------------------------------------------------------------ -->
+<!-- Robinhood data rendering                                             -->
+<!-- ------------------------------------------------------------------ -->
+<script>
+  function d$(v, decimals = 2) {
+    if (v === null || v === undefined) return '<span class="dim">—</span>';
+    const n = Number(v);
+    const s = Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    return (n < 0 ? '-' : '') + '$' + s;
+  }
+  function colorD$(v, decimals = 2) {
+    if (v === null || v === undefined) return '<span class="dim">—</span>';
+    const cls = v >= 0 ? 'green' : 'red';
+    return `<span class="${cls}">${d$(v, decimals)}</span>`;
+  }
+
+  const STATUS_META = {
+    green:   { dot: '#4ade80', label: 'Green',   emoji: '🟢' },
+    yellow:  { dot: '#fbbf24', label: 'Yellow',  emoji: '🟡' },
+    red:     { dot: '#f87171', label: 'Red',     emoji: '🔴' },
+    black:   { dot: '#94a3b8', label: 'Black',   emoji: '⚫' },
+    unknown: { dot: '#475569', label: '—',       emoji: '—'  },
+  };
+  function statusCell(status) {
+    const m = STATUS_META[status] || STATUS_META.unknown;
+    return `<span style="display:inline-flex;align-items:center;gap:5px;">
+      <span style="width:9px;height:9px;border-radius:50%;background:${m.dot};flex-shrink:0;display:inline-block;"></span>
+      <span style="color:${m.dot};font-weight:600;">${m.label}</span>
+    </span>`;
+  }
+  function statusLegend() {
+    return `<div style="display:flex;gap:18px;flex-wrap:wrap;background:#131929;border:1px solid #1e293b;border-radius:5px;padding:9px 14px;margin-bottom:12px;font-size:11px;">
+      <span style="color:#4ade80;">🟢 At/above cost basis → 100% coverage</span>
+      <span style="color:#fbbf24;">🟡 5–15% below → 50–75% coverage</span>
+      <span style="color:#f87171;">🔴 15–30% below → 25–50% coverage</span>
+      <span style="color:#94a3b8;">⚫ 30%+ below → 0–25%, protect recovery</span>
+    </div>`;
+  }
+  function gapCell(pct) {
+    if (pct === null || pct === undefined) return '<span class="dim">—</span>';
+    const cls = pct >= 0 ? 'green' : 'red';
+    return `<span class="${cls}">${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%</span>`;
+  }
+  function coveragePill(actual, suggested, status) {
+    if (actual === null || actual === undefined) return '<span class="dim">—</span>';
+    // Parse suggested range min
+    let ok = true;
+    if (status === 'yellow' && actual > 75) ok = false;
+    if (status === 'red'    && actual > 50) ok = false;
+    if (status === 'black'  && actual > 25) ok = false;
+    if ((status === 'green' || !status) && actual < 100) ok = null; // under-covered but not dangerous
+    const color = ok === true ? '#4ade80' : ok === false ? '#f87171' : '#fbbf24';
+    const icon  = ok === true ? '✓' : ok === false ? '⚠' : '~';
+    return `<span style="background:${color}22;color:${color};padding:2px 7px;border-radius:10px;font-size:11px;font-weight:600;">${actual.toFixed(1)}% ${icon}</span>`;
+  }
+
+  function renderSummary(td) {
+    const w = td.current_week, m = td.current_month;
+    const html = `
+      <table>
+        <thead><tr>
+          <th>Period</th><th>STO (collected)</th><th>BTC (cost)</th><th>Net</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>${w.label}</strong></td>
+            <td class="green">${d$(w.sto)}</td>
+            <td class="red">${d$(w.btc)}</td>
+            <td>${colorD$(w.net)}</td>
+          </tr>
+          <tr>
+            <td><strong>${m.label}</strong></td>
+            <td class="green">${d$(m.sto)}</td>
+            <td class="red">${d$(m.btc)}</td>
+            <td>${colorD$(m.net)}</td>
+          </tr>
+        </tbody>
+      </table>`;
+    document.getElementById('summary-container').innerHTML = html;
+  }
+
+  function renderMonthly(td) {
+    const rows = td.monthly || [];
+    if (!rows.length) { document.getElementById('monthly-container').innerHTML = '<p class="no-data">No data</p>'; return; }
+    let totSTO = 0, totBTC = 0, totCount = 0;
+    let body = '';
+    for (const r of rows) {
+      totSTO += r.sto; totBTC += r.btc; totCount += r.count;
+      body += `<tr>
+        <td>${r.month}</td>
+        <td class="dim">${r.count}</td>
+        <td class="green">${d$(r.sto)}</td>
+        <td class="red">${d$(r.btc)}</td>
+        <td>${colorD$(r.net)}</td>
+      </tr>`;
+    }
+    const totNet = totSTO + totBTC;
+    body += `<tr style="border-top:1px solid #334155;font-weight:600">
+      <td>Total</td>
+      <td class="dim">${totCount}</td>
+      <td class="green">${d$(totSTO)}</td>
+      <td class="red">${d$(totBTC)}</td>
+      <td>${colorD$(totNet)}</td>
+    </tr>`;
+    document.getElementById('monthly-container').innerHTML = `
+      <table>
+        <thead><tr><th>Month</th><th># STOs</th><th>STO</th><th>BTC</th><th>Net</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>`;
+  }
+
+  function renderTickers(td) {
+    const rows = td.by_ticker || [];
+    if (!rows.length) { document.getElementById('ticker-container').innerHTML = '<p class="no-data">No data</p>'; return; }
+    let body = '';
+    for (const r of rows) {
+      body += `<tr>
+        <td><strong>${r.ticker}</strong></td>
+        <td class="green">${d$(r.sto)}</td>
+        <td class="red">${d$(r.btc)}</td>
+        <td>${colorD$(r.net)}</td>
+      </tr>`;
+    }
+    document.getElementById('ticker-container').innerHTML = `
+      <table>
+        <thead><tr><th>Ticker</th><th>STO</th><th>BTC</th><th>Net</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>`;
+  }
+
+  function renderPuts(td) {
+    const rows = td.open_puts || [];
+    if (!rows.length) { document.getElementById('puts-container').innerHTML = '<p class="no-data">No open put positions</p>'; return; }
+    let totalCollateral = 0;
+    let body = '';
+    for (const r of rows) {
+      totalCollateral += r.collateral || 0;
+      const bufColor = r.put_status === 'green' ? '#4ade80'
+                     : r.put_status === 'yellow' ? '#fbbf24'
+                     : '#f87171';
+      const bufStr = r.buffer_pct != null
+        ? `<span style="color:${bufColor}">${r.buffer_pct >= 0 ? '+' : ''}${r.buffer_pct.toFixed(1)}%${r.buffer_pct < 0 ? ' ITM' : ''}</span>`
+        : '<span class="dim">—</span>';
+      body += `<tr>
+        <td>${statusCell(r.put_status)}</td>
+        <td>${r.expiry}</td>
+        <td><strong>${r.ticker}</strong></td>
+        <td>${r.contracts}</td>
+        <td>${d$(r.strike)}</td>
+        <td class="dim">${r.current_price != null ? d$(r.current_price) : '—'}</td>
+        <td>${bufStr}</td>
+        <td class="yellow">${d$(r.collateral)}</td>
+      </tr>`;
+    }
+    body += `<tr style="border-top:1px solid #334155;font-weight:600">
+      <td colspan="7">Total Collateral</td>
+      <td class="yellow">${d$(totalCollateral)}</td>
+    </tr>`;
+    document.getElementById('puts-container').innerHTML = `
+      <table>
+        <thead><tr><th>Status</th><th>Expiry</th><th>Ticker</th><th>Contracts</th><th>Strike</th><th>Price</th><th>Buffer</th><th>Collateral</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+      <p style="font-size:11px;color:#475569;margin-top:8px;">Buffer = current price − strike. Negative = in the money (ITM). Prices from last scanner run.</p>`;
+  }
+
+  function renderCalls(td) {
+    const rows = td.open_calls || [];
+    const exposure = td.call_exposure || [];
+    if (!rows.length) { document.getElementById('calls-container').innerHTML = '<p class="no-data">No open call positions</p>'; return; }
+    let body = '';
+    for (const r of rows) {
+      body += `<tr>
+        <td>${r.expiry}</td>
+        <td><strong>${r.ticker}</strong></td>
+        <td>${r.contracts}</td>
+        <td>${d$(r.strike)}</td>
+        <td>${r.contracts * 100}</td>
+      </tr>`;
+    }
+    let subBody = '';
+    let totValue = 0;
+    for (const e of exposure) {
+      totValue += e.position_value || 0;
+      const shortFlag = e.short_shares ? ' <span class="red">⚠ short</span>' : '';
+      subBody += `<tr>
+        <td>${statusCell(e.position_status)}</td>
+        <td><strong>${e.ticker}</strong>${shortFlag}</td>
+        <td>${e.shares_held.toLocaleString()}</td>
+        <td class="dim">${e.cost_basis != null ? d$(e.cost_basis) : '—'}</td>
+        <td class="dim">${e.last_price != null ? d$(e.last_price) : '—'}</td>
+        <td>${gapCell(e.gap_pct)}</td>
+        <td class="dim">${e.suggested_coverage || '—'}</td>
+        <td>${coveragePill(e.actual_coverage, e.suggested_coverage, e.position_status)}</td>
+        <td class="yellow">${e.position_value != null ? d$(e.position_value) : '—'}</td>
+      </tr>`;
+    }
+    subBody += `<tr style="border-top:1px solid #334155;font-weight:600">
+      <td colspan="8">Total CC Position Value</td>
+      <td class="yellow">${d$(totValue)}</td>
+    </tr>`;
+    document.getElementById('calls-container').innerHTML = `
+      <table>
+        <thead><tr><th>Expiry</th><th>Ticker</th><th>Contracts</th><th>Strike</th><th>Shares Req.</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+      <h2 style="margin-top:20px;margin-bottom:10px;">Covered Call Share Exposure</h2>
+      ${statusLegend()}
+      <table>
+        <thead><tr><th>Status</th><th>Ticker</th><th>Shares Held</th><th>Cost Basis</th><th>Price</th><th>Gap %</th><th>Suggested Cov</th><th>Actual Cov</th><th>Position Value</th></tr></thead>
+        <tbody>${subBody}</tbody>
+      </table>`;
+  }
+
+  function renderHoldings(td) {
+    const rows = td.holdings || [];
+    if (!rows.length) { document.getElementById('holdings-container').innerHTML = '<p class="no-data">No holdings</p>'; return; }
+    let totValue = 0;
+    let body = '';
+    for (const r of rows) {
+      if (r.est_value) totValue += r.est_value;
+      const sharesStr = r.shares < 0 ? `<span class="red">${r.shares} <span class="dim">(pre-history)</span></span>` : `${r.shares}`;
+      body += `<tr>
+        <td><strong>${r.ticker}</strong></td>
+        <td>${sharesStr}</td>
+        <td class="dim">${r.last_price != null ? d$(r.last_price) : '—'}</td>
+        <td>${r.est_value != null ? colorD$(r.est_value) : '—'}</td>
+      </tr>`;
+    }
+    body += `<tr style="border-top:1px solid #334155;font-weight:600">
+      <td colspan="3">Total Est. Value</td>
+      <td>${colorD$(totValue)}</td>
+    </tr>`;
+    document.getElementById('holdings-container').innerHTML = `
+      <table>
+        <thead><tr><th>Ticker</th><th>Shares</th><th>Last Price</th><th>Est. Value</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+      <p class="meta-note">Last price = most recent Buy or Sell transaction; not real-time.</p>`;
+  }
+
+  function renderCapital(td) {
+    const cap = td.capital;
+    if (!cap) return;
+    const html = `
+      <table>
+        <thead><tr><th>Component</th><th>Value</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Cash in open CSPs (puts)</td>
+            <td class="yellow">${d$(cap.put_collateral)}</td>
+            <td class="dim">strike × 100 × open contracts</td>
+          </tr>
+          <tr>
+            <td>Value of shares in covered calls</td>
+            <td class="yellow">${d$(cap.call_value)}</td>
+            <td class="dim">shares in CC × last recorded price</td>
+          </tr>
+          <tr style="border-top:1px solid #334155;font-weight:600">
+            <td>Total deployed</td>
+            <td class="yellow">${d$(cap.total)}</td>
+            <td class="dim">% of portfolio requires knowing account balance</td>
+          </tr>
+        </tbody>
+      </table>`;
+    document.getElementById('capital-container').innerHTML = html;
+  }
+
+  function renderAssignments(td) {
+    const rows = td.assignments || [];
+    if (!rows.length) { document.getElementById('assignments-container').innerHTML = '<p class="no-data">No assignments</p>'; return; }
+    let body = '';
+    for (const r of [...rows].reverse()) {
+      const typeLabel = r.opt_type === 'Put' ? '<span class="badge badge-put">PUT</span>' : r.opt_type === 'Call' ? '<span class="badge badge-call">CALL</span>' : '';
+      body += `<tr>
+        <td>${r.date}</td>
+        <td><strong>${r.ticker}</strong></td>
+        <td>${typeLabel}</td>
+        <td>${r.contracts}</td>
+        <td>${r.strike != null ? d$(r.strike) : '—'}</td>
+        <td class="dim" style="font-size:11px">${r.description}</td>
+      </tr>`;
+    }
+    document.getElementById('assignments-container').innerHTML = `
+      <table>
+        <thead><tr><th>Date</th><th>Ticker</th><th>Type</th><th>Contracts</th><th>Strike</th><th>Description</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>`;
+  }
+
+  if (typeof TRADE_DATA !== 'undefined' && TRADE_DATA) {
+    const td = TRADE_DATA;
+    renderSummary(td);
+    renderMonthly(td);
+    renderTickers(td);
+    renderPuts(td);
+    renderCalls(td);
+    renderHoldings(td);
+    renderCapital(td);
+    renderAssignments(td);
+    document.querySelector('.subtitle').textContent =
+      `Robinhood income tracking + live trade opportunities — data as of ${td.generated}`;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "watchlist": [
+    { "ticker": "TQQQ", "note": "leveraged ETF" },
+    { "ticker": "HOOD", "note": "" },
+    { "ticker": "SOFI", "note": "" },
+    { "ticker": "PLTR", "note": "" },
+    { "ticker": "BMNR", "note": "" },
+    { "ticker": "NVDA", "note": "" },
+    { "ticker": "GOOGL", "note": "" },
+    { "ticker": "AAPL", "note": "" },
+    { "ticker": "AMZN", "note": "" },
+    { "ticker": "BITX", "note": "crypto ETF" },
+    { "ticker": "ETHU", "note": "crypto ETF" },
+    { "ticker": "TNA", "note": "leveraged ETF" },
+    { "ticker": "MSFT", "note": "" },
+    { "ticker": "TEM", "note": "" },
+    { "ticker": "COST", "note": "" }
+  ]
+}

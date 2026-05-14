@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Options Dashboard — Combined Mockup</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0f1117;
+      color: #e2e8f0;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      padding: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* ── banners ── */
+    .mockup-banner {
+      background: #78350f;
+      border: 1px solid #d97706;
+      color: #fcd34d;
+      padding: 8px 16px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── page headers ── */
+    .page-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    h1 { font-size: 20px; font-weight: 700; color: #f8fafc; }
+    .header-meta { color: #64748b; font-size: 12px; }
+    .subtitle { color: #64748b; font-size: 12px; margin-bottom: 28px; }
+
+    /* ── section break between goal tracker and dashboard ── */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 48px 0 40px;
+    }
+    .section-divider-line {
+      flex: 1;
+      height: 1px;
+      background: #334155;
+    }
+    .section-divider-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      white-space: nowrap;
+      padding: 4px 12px;
+      border: 1px solid #1e293b;
+      border-radius: 4px;
+    }
+
+    /* ── dashboard VIX bar ── */
+    .vix-bar {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 14px 20px;
+      margin-bottom: 28px;
+      border-left: 4px solid #fbbf24;
+    }
+    .vix-bar-value { font-size: 28px; font-weight: 700; line-height: 1.1; color: #fbbf24; }
+    .vix-bar-label { font-size: 13px; font-weight: 600; color: #fbbf24; }
+    .vix-bar-desc  { font-size: 11px; color: #64748b; }
+    .vix-mini-bars { display: flex; align-items: flex-end; gap: 3px; height: 32px; }
+    .vix-mini-bar  { width: 10px; border-radius: 2px; }
+
+    /* ── shared structure ── */
+    section { margin-bottom: 36px; }
+    h2 {
+      font-size: 13px; font-weight: 600; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 14px; padding-bottom: 6px;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    /* ── cards ── */
+    .card {
+      background: #161b27;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .card-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .card-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+    /* ── progress hero ── */
+    .goal-kpis { display: flex; gap: 32px; margin-bottom: 20px; flex-wrap: wrap; }
+    .kpi { display: flex; flex-direction: column; gap: 4px; }
+    .kpi-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
+    .kpi-value { font-size: 22px; font-weight: 700; color: #f8fafc; }
+    .kpi-sub { font-size: 11px; color: #64748b; }
+
+    .progress-bar-labels { display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-bottom: 6px; }
+    .progress-bar-track { height: 10px; background: #1e293b; border-radius: 5px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; border-radius: 5px; }
+
+    .progress-details {
+      display: flex; gap: 24px; margin-top: 14px;
+      padding-top: 14px; border-top: 1px solid #1e293b; flex-wrap: wrap;
+    }
+    .pd-item { display: flex; flex-direction: column; gap: 3px; }
+    .pd-label { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; }
+    .pd-value { font-size: 13px; color: #cbd5e1; }
+
+    /* ── VIX gauge (goal tracker) ── */
+    .vix-big { font-size: 52px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+    .vix-zone-label { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+    .vix-gauge-track {
+      height: 16px; border-radius: 8px; display: flex;
+      overflow: visible; position: relative; margin-bottom: 8px;
+    }
+    .vix-segment { height: 100%; }
+    .vix-segment:first-child { border-radius: 8px 0 0 8px; }
+    .vix-segment:last-child  { border-radius: 0 8px 8px 0; }
+    .vix-marker {
+      position: absolute; top: -5px; width: 3px; height: 26px;
+      background: #f8fafc; border-radius: 2px;
+      box-shadow: 0 0 6px rgba(255,255,255,0.6);
+    }
+    .vix-gauge-labels { display: flex; justify-content: space-between; font-size: 10px; color: #475569; margin-bottom: 16px; }
+    .vix-cash-rule { background: #0f1117; border: 1px solid #1e293b; border-radius: 6px; padding: 12px; }
+    .vcr-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid #1e293b; }
+    .vcr-row:last-child { border-bottom: none; }
+    .vcr-label { color: #94a3b8; font-size: 11px; }
+    .vcr-value { color: #f8fafc; font-size: 13px; font-weight: 600; }
+
+    /* ── deployment card ── */
+    .deploy-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #1e293b; }
+    .deploy-row:last-child { border-bottom: none; }
+    .deploy-label { color: #94a3b8; font-size: 12px; }
+    .deploy-value { color: #f8fafc; font-size: 13px; font-weight: 600; }
+    .account-input {
+      background: #0f1117; border: 1px solid #334155;
+      color: #f8fafc; font-family: inherit; font-size: 13px; font-weight: 600;
+      padding: 3px 6px; border-radius: 4px; width: 110px; text-align: right;
+    }
+    .account-input:focus { outline: none; border-color: #38bdf8; }
+
+    /* ── tables ── */
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left; padding: 6px 12px; background: #1e293b;
+      color: #94a3b8; font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.06em; white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid #1a2234; white-space: nowrap; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #131929; }
+    tr.current-zone td { background: #1a2234; }
+    tr.current-zone td:first-child { border-left: 3px solid #facc15; }
+    tr.total-row td { background: #1a2234; font-weight: 600; }
+    th.num-right, td.num-right { text-align: right; }
+
+    .zone-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+
+    /* ── colors ── */
+    .green  { color: #4ade80; }
+    .yellow { color: #facc15; }
+    .red    { color: #f87171; }
+    .blue   { color: #38bdf8; }
+    .dim    { color: #475569; }
+    .sto    { color: #4ade80; }
+    .btc    { color: #f87171; }
+
+    /* ── badges ── */
+    .badge { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+    .badge-green  { background: #14532d; color: #4ade80; }
+    .badge-yellow { background: #422006; color: #fbbf24; }
+    .badge-red    { background: #450a0a; color: #f87171; }
+    .badge-blue   { background: #1e3a5f; color: #38bdf8; border: 1px solid #1d4ed8; }
+    .badge-purple { background: #2e1065; color: #c084fc; }
+    .badge-put    { background: #1e3a5f; color: #60a5fa; border-radius: 4px; }
+    .badge-call   { background: #2d1b69; color: #a78bfa; border-radius: 4px; }
+    .badge-both   { background: #1e3b2f; color: #4ade80; border-radius: 4px; }
+
+    /* ── rank + bb bars (scanner) ── */
+    .rank-bar {
+      display: inline-block; width: 60px; height: 8px;
+      background: #1e293b; border-radius: 4px;
+      vertical-align: middle; margin-right: 6px; overflow: hidden;
+    }
+    .rank-fill { height: 100%; border-radius: 4px; }
+    .bb-bar {
+      display: inline-block; width: 80px; height: 8px;
+      background: #1e293b; border-radius: 4px;
+      vertical-align: middle; margin-right: 6px; overflow: hidden; position: relative;
+    }
+    .bb-fill { height: 100%; border-radius: 4px; position: absolute; }
+    .bb-midline { position: absolute; left: 50%; top: 0; width: 1px; height: 100%; background: #475569; }
+
+    /* ── capital allocation stacked bar ── */
+    .alloc-bar {
+      height: 28px; border-radius: 6px; display: flex;
+      overflow: hidden; margin: 14px 0 6px;
+    }
+    .alloc-segment { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; white-space: nowrap; overflow: hidden; }
+    .alloc-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; font-size: 11px; }
+    .alloc-legend-item { display: flex; align-items: center; gap: 5px; }
+    .alloc-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+    /* ── capital split cards ── */
+    .split-stat { display: flex; flex-direction: column; gap: 3px; margin-bottom: 14px; }
+    .split-stat-label { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; }
+    .split-stat-value { font-size: 18px; font-weight: 700; }
+    .split-divider { border: none; border-top: 1px solid #1e293b; margin: 12px 0; }
+
+    .meta-note { font-size: 11px; color: #475569; margin-top: 10px; }
+    .no-data   { color: #334155; padding: 20px 12px; }
+  </style>
+</head>
+<body>
+
+  <div class="mockup-banner">
+    MOCKUP — Goal tracker uses real data (summary.json + scanner Apr 21). Dashboard bottom half uses illustrative fake data to show layout. Approve design before real build.
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- GOAL TRACKER HEADER                                                  -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <div class="page-header">
+    <h1>Income Goal Tracker</h1>
+    <span class="header-meta">April 2026 &nbsp;·&nbsp; Last updated Apr 24</span>
+  </div>
+  <div class="subtitle">Working backwards from $10,000/month after-tax income goal</div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 1: THIS MONTH                                                -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>April 2026 — Monthly Progress</h2>
+    <div class="card">
+      <div class="goal-kpis">
+        <div class="kpi">
+          <span class="kpi-label">Net Goal (after tax)</span>
+          <span class="kpi-value">$10,000</span>
+          <span class="kpi-sub">per month</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">Gross Target</span>
+          <span class="kpi-value">$14,343</span>
+          <span class="kpi-sub">must collect before taxes</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">Collected (gross)</span>
+          <span class="kpi-value yellow">$244.89</span>
+          <span class="kpi-sub">net of STO − BTC</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">Est. After-Tax</span>
+          <span class="kpi-value yellow">$170</span>
+          <span class="kpi-sub">at ~30% effective rate</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">Still Needed</span>
+          <span class="kpi-value red">$14,098</span>
+          <span class="kpi-sub">gross · 6 days left</span>
+        </div>
+      </div>
+
+      <div class="progress-bar-labels">
+        <span>$0</span>
+        <span style="color:#e2e8f0">1.7% of gross target</span>
+        <span>$14,343</span>
+      </div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" style="width:1.7%; background:#facc15;"></div>
+      </div>
+
+      <div class="progress-details">
+        <div class="pd-item"><span class="pd-label">STO Collected</span><span class="pd-value sto">+$1,096.69</span></div>
+        <div class="pd-item"><span class="pd-label">BTC Costs</span><span class="pd-value btc">−$851.80</span></div>
+        <div class="pd-item"><span class="pd-label">Net Premium</span><span class="pd-value green">$244.89</span></div>
+        <div class="pd-item"><span class="pd-label">Days Elapsed / Left</span><span class="pd-value">24 / 6</span></div>
+        <div class="pd-item"><span class="pd-label">Daily Run Rate</span><span class="pd-value">$10.20 / day</span></div>
+        <div class="pd-item"><span class="pd-label">Projected Month Total</span><span class="pd-value red">~$306 &nbsp;(2.1% of target)</span></div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 2: VIX + FEAR & GREED + DEPLOYMENT                          -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>Market Sentiment &amp; Deployment</h2>
+    <div class="card-grid-3">
+
+      <!-- VIX gauge -->
+      <div class="card">
+        <div style="font-size:10px; color:#475569; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">CBOE Volatility Index</div>
+        <div class="vix-big" style="color:#facc15">19.87</div>
+        <div class="vix-zone-label" style="color:#facc15">Slight Fear</div>
+
+        <div class="vix-gauge-track" style="position:relative;">
+          <div class="vix-segment" style="width:6.7%;  background:#ef4444;"></div>
+          <div class="vix-segment" style="width:10%;   background:#f97316;"></div>
+          <div class="vix-segment" style="width:16.7%; background:#eab308;"></div>
+          <div class="vix-segment" style="width:16.7%; background:#84cc16;"></div>
+          <div class="vix-segment" style="width:16.7%; background:#22c55e;"></div>
+          <div class="vix-segment" style="width:33.2%; background:#10b981;"></div>
+          <div class="vix-marker" style="left:32.9%;"></div>
+        </div>
+        <div class="vix-gauge-labels">
+          <span>10</span><span>12</span><span>15</span><span>20</span><span>25</span><span>30</span><span>40</span>
+        </div>
+
+        <div class="vix-cash-rule">
+          <div class="vcr-row">
+            <span class="vcr-label">Zone</span>
+            <span class="vcr-value" style="color:#facc15">Slight Fear (15–20)</span>
+          </div>
+          <div class="vcr-row">
+            <span class="vcr-label">Cash to hold</span>
+            <span class="vcr-value" style="color:#facc15">20 – 25%</span>
+          </div>
+          <div class="vcr-row">
+            <span class="vcr-label">Deployable</span>
+            <span class="vcr-value">$337,500 – $360,000</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fear & Greed gauge -->
+      <div class="card">
+        <div style="font-size:10px; color:#475569; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">CNN Fear &amp; Greed Index</div>
+        <div class="vix-big" style="color:#f97316;">34</div>
+        <div class="vix-zone-label" style="color:#f97316;">Fear</div>
+
+        <!-- 0–100 gradient gauge: Extreme Fear | Fear | Neutral | Greed | Extreme Greed -->
+        <div class="vix-gauge-track" style="position:relative;">
+          <div class="vix-segment" style="width:25%; background:#ef4444;"></div>
+          <div class="vix-segment" style="width:20%; background:#f97316;"></div>
+          <div class="vix-segment" style="width:10%; background:#eab308;"></div>
+          <div class="vix-segment" style="width:20%; background:#84cc16;"></div>
+          <div class="vix-segment" style="width:25%; background:#10b981;"></div>
+          <!-- score 34 → 34% from left -->
+          <div class="vix-marker" style="left:34%;"></div>
+        </div>
+        <div class="vix-gauge-labels">
+          <span>0</span><span>25</span><span>45</span><span>55</span><span>75</span><span>100</span>
+        </div>
+
+        <div class="vix-cash-rule">
+          <div class="vcr-row">
+            <span class="vcr-label">Now</span>
+            <span class="vcr-value" style="color:#f97316;">34 — Fear</span>
+          </div>
+          <div class="vcr-row">
+            <span class="vcr-label">1 week ago</span>
+            <span class="vcr-value dim">28 — Extreme Fear</span>
+          </div>
+          <div class="vcr-row">
+            <span class="vcr-label">1 month ago</span>
+            <span class="vcr-value dim">55 — Neutral</span>
+          </div>
+          <div class="vcr-row">
+            <span class="vcr-label">1 year ago</span>
+            <span class="vcr-value dim">62 — Greed</span>
+          </div>
+        </div>
+        <div style="margin-top:10px; font-size:10px; color:#334155;">Source: CNN Markets · updated via fetch_fear_greed.py</div>
+      </div>
+
+      <!-- Deployment calculator -->
+      <div class="card">
+        <div class="deploy-row">
+          <span class="deploy-label">Account Balance</span>
+          <input class="account-input" type="text" value="$450,000" />
+        </div>
+        <div class="deploy-row">
+          <span class="deploy-label">Gross Monthly Target</span>
+          <span class="deploy-value blue">$14,343</span>
+        </div>
+        <div class="deploy-row">
+          <span class="deploy-label">Cash to Hold (20–25%)</span>
+          <span class="deploy-value">$90,000 – $112,500</span>
+        </div>
+        <div class="deploy-row">
+          <span class="deploy-label">Deployable Capital</span>
+          <span class="deploy-value">$337,500 – $360,000</span>
+        </div>
+
+        <div style="margin: 18px 0 6px; font-size:11px; color:#475569; text-transform:uppercase; letter-spacing:0.06em;">Required Monthly Return</div>
+        <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:4px;">
+          <span style="font-size:22px; font-weight:700; color:#4ade80;">3.98% – 4.25%</span>
+          <span class="dim" style="font-size:12px;">/ month</span>
+        </div>
+        <div class="dim" style="font-size:11px; margin-bottom:16px;">47.8% – 51.0% annualized on deployed capital</div>
+
+        <div style="background:#0f1117; border:1px solid #1e293b; border-radius:6px; padding:10px 12px; font-size:11px; color:#64748b; line-height:1.8;">
+          To net $10,000/month after ~30% taxes you need to collect<br>
+          <strong style="color:#38bdf8;">$14,343/month gross</strong> from options premium.<br>
+          At current VIX, deploy $337.5k–$360k and earn 3.98–4.25% on that capital.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 3: YTD GOAL TRACKING                                         -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>YTD Goal Tracking</h2>
+    <div class="card" style="padding:0; overflow:hidden;">
+      <table>
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th class="num-right"># STOs</th>
+            <th class="num-right">STO</th>
+            <th class="num-right">BTC</th>
+            <th class="num-right">Gross Net</th>
+            <th class="num-right">After Tax (~30%)</th>
+            <th class="num-right">vs $10k Net Goal</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Jan 2026</td>
+            <td class="num-right">36</td>
+            <td class="num-right sto">$17,106</td>
+            <td class="num-right btc">($6,848)</td>
+            <td class="num-right">$10,258</td>
+            <td class="num-right">$7,150</td>
+            <td class="num-right red">−$2,850</td>
+            <td><span class="badge badge-yellow">Partial</span></td>
+          </tr>
+          <tr>
+            <td>Feb 2026</td>
+            <td class="num-right">21</td>
+            <td class="num-right sto">$6,330</td>
+            <td class="num-right btc">($2,382)</td>
+            <td class="num-right">$3,948</td>
+            <td class="num-right">$2,751</td>
+            <td class="num-right red">−$7,249</td>
+            <td><span class="badge badge-red">Missed</span></td>
+          </tr>
+          <tr>
+            <td>Mar 2026</td>
+            <td class="num-right">33</td>
+            <td class="num-right sto">$11,863</td>
+            <td class="num-right btc">($6,422)</td>
+            <td class="num-right">$5,441</td>
+            <td class="num-right">$3,792</td>
+            <td class="num-right red">−$6,208</td>
+            <td><span class="badge badge-red">Missed</span></td>
+          </tr>
+          <tr>
+            <td>Apr 2026 <span class="dim" style="font-size:10px">in progress</span></td>
+            <td class="num-right">4</td>
+            <td class="num-right sto">$1,097</td>
+            <td class="num-right btc">($852)</td>
+            <td class="num-right">$245</td>
+            <td class="num-right">$171</td>
+            <td class="num-right red">−$9,829</td>
+            <td><span class="badge badge-red">1.7%</span></td>
+          </tr>
+          <tr class="total-row">
+            <td>YTD Total</td>
+            <td class="num-right">94</td>
+            <td class="num-right sto">$36,396</td>
+            <td class="num-right btc">($16,504)</td>
+            <td class="num-right">$19,892</td>
+            <td class="num-right">$13,863</td>
+            <td class="num-right red">−$26,137</td>
+            <td><span class="dim" style="font-size:11px">vs $40k goal</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:8px; font-size:11px; color:#475569;">
+      After-tax = gross net × (1 − 0.303) &nbsp;·&nbsp; YTD net goal = $10,000 × 4 months = $40,000 &nbsp;·&nbsp; Currently at 34.7% of YTD goal
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 4: REQUIRED RETURN BY VIX ZONE                               -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>Required Return by VIX Zone — Reference</h2>
+    <div class="card" style="padding:0; overflow:hidden;">
+      <table>
+        <thead>
+          <tr>
+            <th>Zone</th>
+            <th>VIX</th>
+            <th>Cash %</th>
+            <th class="num-right">Cash ($)</th>
+            <th class="num-right">Deployable</th>
+            <th class="num-right">Req Return / mo</th>
+            <th class="num-right">Annualized</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="zone-dot" style="background:#ef4444;"></span>Extreme Greed</td>
+            <td class="dim">&lt; 12</td>
+            <td>40 – 50%</td>
+            <td class="num-right">$180k – $225k</td>
+            <td class="num-right">$225k – $270k</td>
+            <td class="num-right red">5.31% – 6.37%</td>
+            <td class="num-right red">63.7% – 76.4%</td>
+          </tr>
+          <tr>
+            <td><span class="zone-dot" style="background:#f97316;"></span>Greed</td>
+            <td class="dim">12 – 15</td>
+            <td>30 – 40%</td>
+            <td class="num-right">$135k – $180k</td>
+            <td class="num-right">$270k – $315k</td>
+            <td class="num-right" style="color:#fb923c;">4.55% – 5.31%</td>
+            <td class="num-right" style="color:#fb923c;">54.6% – 63.7%</td>
+          </tr>
+          <tr class="current-zone">
+            <td>
+              <span class="zone-dot" style="background:#eab308;"></span>Slight Fear
+              <span class="badge badge-blue" style="margin-left:6px;">NOW</span>
+            </td>
+            <td class="dim">15 – 20</td>
+            <td>20 – 25%</td>
+            <td class="num-right">$90k – $112.5k</td>
+            <td class="num-right">$337.5k – $360k</td>
+            <td class="num-right yellow">3.98% – 4.25%</td>
+            <td class="num-right yellow">47.8% – 51.0%</td>
+          </tr>
+          <tr>
+            <td><span class="zone-dot" style="background:#84cc16;"></span>Fear</td>
+            <td class="dim">20 – 25</td>
+            <td>10 – 15%</td>
+            <td class="num-right">$45k – $67.5k</td>
+            <td class="num-right">$382.5k – $405k</td>
+            <td class="num-right green">3.54% – 3.75%</td>
+            <td class="num-right green">42.5% – 45.0%</td>
+          </tr>
+          <tr>
+            <td><span class="zone-dot" style="background:#22c55e;"></span>Very Fearful</td>
+            <td class="dim">25 – 30</td>
+            <td>5 – 10%</td>
+            <td class="num-right">$22.5k – $45k</td>
+            <td class="num-right">$405k – $427.5k</td>
+            <td class="num-right green">3.36% – 3.54%</td>
+            <td class="num-right green">40.3% – 42.5%</td>
+          </tr>
+          <tr>
+            <td><span class="zone-dot" style="background:#10b981;"></span>Extreme Fear</td>
+            <td class="dim">≥ 30</td>
+            <td>0 – 5%</td>
+            <td class="num-right">$0 – $22.5k</td>
+            <td class="num-right">$427.5k – $450k</td>
+            <td class="num-right green">3.19% – 3.36%</td>
+            <td class="num-right green">38.2% – 40.3%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:8px; font-size:11px; color:#475569;">
+      Based on $450,000 account · $14,343/month gross target · ~30% blended tax rate (MA 5% + federal 24–32%)
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 5: CAPITAL ALLOCATION                                        -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>Capital Allocation — CSPs vs Covered Calls</h2>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
+        Full Account — $450,000
+      </div>
+      <div class="alloc-bar">
+        <div class="alloc-segment" style="width:22.5%; background:#334155; color:#94a3b8;">$101k cash</div>
+        <div class="alloc-segment" style="width:51.3%; background:#3730a3; color:#c4b5fd;">$231k shares (CC eligible)</div>
+        <div class="alloc-segment" style="width:3.8%;  background:#c2410c; color:#fff; font-size:9px;">$17k</div>
+        <div class="alloc-segment" style="width:22.4%; background:#166534; color:#86efac;">$101k available</div>
+      </div>
+      <div class="alloc-legend">
+        <div class="alloc-legend-item"><div class="alloc-dot" style="background:#334155;"></div><span class="dim">Cash buffer (VIX 20–25% rule) — $90k–$112.5k · keep untouched</span></div>
+        <div class="alloc-legend-item"><div class="alloc-dot" style="background:#3730a3;"></div><span style="color:#c4b5fd;">Positive share holdings — $230,900 across HOOD, PLTR, SOFI, NVDA, TQQQ, BMNR</span></div>
+        <div class="alloc-legend-item"><div class="alloc-dot" style="background:#c2410c;"></div><span style="color:#fb923c;">Open CSP collateral — $17,000 already committed (TQQQ $9.4k + SOFI $7.6k)</span></div>
+        <div class="alloc-legend-item"><div class="alloc-dot" style="background:#166534;"></div><span class="green">Available for new CSPs — $100,850</span></div>
+      </div>
+    </div>
+
+    <div class="card-grid-3">
+
+      <div class="card">
+        <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:12px;">
+          Cash-Secured Puts (CSPs)
+        </div>
+        <div class="split-stat">
+          <span class="split-stat-label">Budget for new CSPs</span>
+          <span class="split-stat-value green">$100,850</span>
+        </div>
+        <hr class="split-divider"/>
+        <div style="font-size:12px; color:#94a3b8; line-height:1.9;">
+          <div style="display:flex; justify-content:space-between;"><span>Deployable (VIX midpoint)</span><span style="color:#e2e8f0">$348,750</span></div>
+          <div style="display:flex; justify-content:space-between;"><span>− Share holdings (CC collateral)</span><span class="red">−$230,900</span></div>
+          <div style="display:flex; justify-content:space-between;"><span>− Open CSP collateral</span><span class="red">−$17,000</span></div>
+          <div style="display:flex; justify-content:space-between; padding-top:6px; border-top:1px solid #1e293b; margin-top:4px; font-weight:600;"><span>= Available for new CSPs</span><span class="green">$100,850</span></div>
+        </div>
+        <div style="margin-top:12px; font-size:11px; color:#475569; line-height:1.6;">
+          At avg $4k/contract → <strong style="color:#e2e8f0;">~25 new CSP contracts</strong>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:12px;">
+          Covered Calls (CCs)
+        </div>
+        <div class="split-stat">
+          <span class="split-stat-label">Total CC-eligible share value</span>
+          <span class="split-stat-value" style="color:#c4b5fd;">$230,900</span>
+        </div>
+        <hr class="split-divider"/>
+        <div style="font-size:12px; line-height:1.0;">
+          <div style="display:grid; grid-template-columns: 1fr auto auto auto; gap:0 12px; align-items:center; padding:5px 0; border-bottom:1px solid #1e293b; font-size:10px; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">
+            <span>Ticker</span><span style="text-align:right;">Shares</span><span style="text-align:right;">Last Price</span><span style="text-align:right;">Value</span>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr auto auto auto; gap:0 12px; align-items:center; padding:6px 0; border-bottom:1px solid #1e293b;">
+            <span class="dim">PLTR</span><span style="text-align:right;">400</span><span style="text-align:right;">$180.00</span><span style="text-align:right; color:#c4b5fd;">$72,000</span>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr auto auto auto; gap:0 12px; align-items:center; padding:6px 0; border-bottom:1px solid #1e293b;">
+            <span class="dim">HOOD</span><span style="text-align:right;">500</span><span style="text-align:right;">$124.00</span><span style="text-align:right; color:#c4b5fd;">$62,000</span>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr auto auto auto; gap:0 12px; align-items:center; padding:6px 0; border-bottom:1px solid #1e293b;">
+            <span class="dim">NVDA</span><span style="text-align:right;">200</span><span style="text-align:right;">$200.00</span><span style="text-align:right; color:#c4b5fd;">$40,000</span>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr auto auto auto; gap:0 12px; align-items:center; padding:6px 0; border-bottom:1px solid #1e293b;">
+            <span class="dim">SOFI</span><span style="text-align:right;">1,200</span><span style="text-align:right;">$25.00</span><span style="text-align:right; color:#c4b5fd;">$30,000</span>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr auto auto auto; gap:0 12px; align-items:center; padding:6px 0; border-bottom:1px solid #1e293b;">
+            <span class="dim">BMNR</span><span style="text-align:right;">500</span><span style="text-align:right;">$33.00</span><span style="text-align:right; color:#c4b5fd;">$16,500</span>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr auto auto auto; gap:0 12px; align-items:center; padding:6px 0; border-bottom:1px solid #1e293b;">
+            <span class="dim">TQQQ</span><span style="text-align:right;">200</span><span style="text-align:right;">$52.00</span><span style="text-align:right; color:#c4b5fd;">$10,400</span>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr auto auto auto; gap:0 12px; align-items:center; padding:6px 0; font-weight:600;">
+            <span>Total (30 cts eligible)</span><span style="text-align:right;">3,000</span><span></span><span style="text-align:right; color:#c4b5fd;">$230,900</span>
+          </div>
+        </div>
+        <div style="margin-top:10px; font-size:11px; color:#475569; line-height:1.6;">
+          Last prices from most recent Buy/Sell transactions · no new cash required
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:12px;">
+          Currently Open
+        </div>
+        <div style="font-size:12px; line-height:1.9;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+            <span class="dim">TQQQ 5/1 Put $47.00</span><span>2c · $9,400</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <span class="dim">SOFI &nbsp;5/1 Put $19.00</span><span>4c · $7,600</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+            <span class="dim">TQQQ 5/1 Call $48.00</span><span>2c (CC)</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <span class="dim">HOOD &nbsp;5/8 Call $85.00</span><span>3c (CC)</span>
+          </div>
+          <hr class="split-divider"/>
+          <div style="display:flex; justify-content:space-between;"><span class="dim">CSP collateral tied up</span><span class="red">$17,000</span></div>
+          <div style="display:flex; justify-content:space-between;"><span class="dim">CCs open</span><span>5 of 30 eligible</span></div>
+          <div style="display:flex; justify-content:space-between; padding-top:6px; border-top:1px solid #1e293b; margin-top:4px;"><span class="dim">CSPs open</span><span>6 cts · $101k budget left</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 6: CSP RISK TIER GUIDE                                       -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>CSP Risk Level Guide — Delta vs. Return Tradeoff · 7–30 DTE</h2>
+
+    <div class="card-grid-3" style="margin-bottom:16px;">
+      <div class="card" style="border-color:#334155;">
+        <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Conservative · Delta ~0.10–0.15</div>
+        <div style="font-size:13px; color:#94a3b8; line-height:2.0;">
+          <div style="display:flex; justify-content:space-between;"><span>Typical return/10d</span><span style="color:#e2e8f0;">0.5–0.9%</span></div>
+          <div style="display:flex; justify-content:space-between;"><span>Contracts to earn $1k</span><span style="color:#e2e8f0;">~45–80 cts</span></div>
+          <div style="display:flex; justify-content:space-between;"><span>Collateral for $10,980</span><span style="color:#f87171;">~$200k–$400k</span></div>
+          <div style="display:flex; justify-content:space-between; padding-top:6px; border-top:1px solid #1e293b; margin-top:4px;"><span>Fits in $100,850 budget?</span><span style="color:#f87171;">✗ No</span></div>
+        </div>
+        <div style="margin-top:10px; font-size:11px; color:#475569;">Very safe but premium is too thin to hit monthly target with available capital.</div>
+      </div>
+      <div class="card" style="border-color:#334155;">
+        <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Moderate · Delta ~0.15–0.20</div>
+        <div style="font-size:13px; color:#94a3b8; line-height:2.0;">
+          <div style="display:flex; justify-content:space-between;"><span>Typical return/10d</span><span style="color:#e2e8f0;">1.2–1.8%</span></div>
+          <div style="display:flex; justify-content:space-between;"><span>Contracts to earn $1k</span><span style="color:#e2e8f0;">~20–35 cts</span></div>
+          <div style="display:flex; justify-content:space-between;"><span>Collateral for $10,980</span><span style="color:#facc15;">~$140k–$200k</span></div>
+          <div style="display:flex; justify-content:space-between; padding-top:6px; border-top:1px solid #1e293b; margin-top:4px;"><span>Fits in $100,850 budget?</span><span style="color:#facc15;">~ Partial</span></div>
+        </div>
+        <div style="margin-top:10px; font-size:11px; color:#475569;">Gets closer — may cover 60–75% of target. Requires rolling more frequently.</div>
+      </div>
+      <div class="card" style="border-color:#facc15;">
+        <div style="font-size:11px; color:#facc15; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Standard · Delta ~0.20–0.25 ← current approach</div>
+        <div style="font-size:13px; color:#94a3b8; line-height:2.0;">
+          <div style="display:flex; justify-content:space-between;"><span>Typical return/10d</span><span style="color:#e2e8f0;">2.0–4.5%</span></div>
+          <div style="display:flex; justify-content:space-between;"><span>Contracts to earn $1k</span><span style="color:#e2e8f0;">~8–20 cts</span></div>
+          <div style="display:flex; justify-content:space-between;"><span>Collateral for $10,980</span><span style="color:#4ade80;">~$60k–$100k</span></div>
+          <div style="display:flex; justify-content:space-between; padding-top:6px; border-top:1px solid #1e293b; margin-top:4px;"><span>Fits in $100,850 budget?</span><span style="color:#4ade80;">✓ Yes</span></div>
+        </div>
+        <div style="margin-top:10px; font-size:11px; color:#475569;">Hits the target within budget. Higher assignment risk but manageable on stocks you'd own anyway.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:8px; font-size:11px; color:#475569;">
+      Based on $100,850 CSP budget · $10,980 remaining after CCs · typical 10 DTE contracts · collateral = strike × 100 per contract
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION DIVIDER                                                       -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">Robinhood Trade History &amp; Scanner</div>
+    <div class="section-divider-line"></div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- DASHBOARD HEADER                                                      -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <div class="page-header">
+    <h1>Options Dashboard</h1>
+    <span class="header-meta">Robinhood income tracking + live trade opportunities</span>
+  </div>
+  <div class="subtitle" style="margin-bottom:20px;">Data from data/robinhood_export.csv + Tradier scanner output</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- SCANNER: Trade Opportunities ~0.25 Delta                             -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>Trade Opportunities — ~0.25 Delta</h2>
+    <p style="font-size:11px; color:#334155; margin-bottom:12px;">Last scan: 4/21/2026, 2:14:08 PM</p>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th><th>Price</th><th>BB Position</th><th>Side</th>
+            <th>Expiry</th><th>DTE</th><th>Type</th><th>Strike</th>
+            <th>Delta</th><th>Bid</th><th>Ask</th><th>Mid</th>
+            <th>Ret%</th><th>Ann%</th><th>BB Buffer</th><th>IV%</th><th>HV Rank</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>ETHU</strong></td>
+            <td class="dim">$18.52</td>
+            <td><span class="bb-bar"><span class="bb-fill" style="left:22%;width:4px;background:#60a5fa;"></span><span class="bb-midline"></span></span><span style="color:#60a5fa;">22%</span></td>
+            <td><span class="badge badge-put">Put</span></td>
+            <td>5/1/2026</td><td><span style="color:#fbbf24;">7</span></td>
+            <td><span class="badge badge-put">Put</span></td>
+            <td><strong>$15.00</strong></td>
+            <td><span style="color:#60a5fa;">0.248</span></td>
+            <td class="dim">$0.80</td><td class="dim">$1.05</td>
+            <td class="green">$0.93</td>
+            <td><span class="green">6.18%</span></td><td><span class="green">322.6%</span></td>
+            <td><span style="color:#4ade80;">✓ $12.40 (+20.9%)</span></td>
+            <td><span style="color:#4ade80;">148.2%</span></td>
+            <td><span class="rank-bar"><span class="rank-fill" style="width:98%;background:#4ade80;"></span></span><span style="color:#4ade80;">98</span></td>
+          </tr>
+          <tr>
+            <td><strong>SOFI</strong></td>
+            <td class="dim">$24.83</td>
+            <td><span class="bb-bar"><span class="bb-fill" style="left:31%;width:4px;background:#60a5fa;"></span><span class="bb-midline"></span></span><span style="color:#60a5fa;">31%</span></td>
+            <td><span class="badge badge-put">Put</span></td>
+            <td>5/1/2026</td><td><span style="color:#fbbf24;">7</span></td>
+            <td><span class="badge badge-put">Put</span></td>
+            <td><strong>$20.00</strong></td>
+            <td><span style="color:#60a5fa;">0.247</span></td>
+            <td class="dim">$0.47</td><td class="dim">$0.63</td>
+            <td class="green">$0.55</td>
+            <td><span class="green">2.75%</span></td><td><span class="green">143.4%</span></td>
+            <td><span style="color:#4ade80;">✓ $19.10 (+4.7%)</span></td>
+            <td><span style="color:#fbbf24;">98.2%</span></td>
+            <td><span class="rank-bar"><span class="rank-fill" style="width:88%;background:#4ade80;"></span></span><span style="color:#4ade80;">88</span></td>
+          </tr>
+          <tr>
+            <td><strong>HOOD</strong></td>
+            <td class="dim">$122.40</td>
+            <td><span class="bb-bar"><span class="bb-fill" style="left:28%;width:4px;background:#60a5fa;"></span><span class="bb-midline"></span></span><span style="color:#60a5fa;">28%</span></td>
+            <td><span class="badge badge-put">Put</span></td>
+            <td>5/8/2026</td><td>14</td>
+            <td><span class="badge badge-put">Put</span></td>
+            <td><strong>$105.00</strong></td>
+            <td><span style="color:#60a5fa;">0.252</span></td>
+            <td class="dim">$2.15</td><td class="dim">$2.80</td>
+            <td class="green">$2.48</td>
+            <td><span class="green">2.36%</span></td><td><span class="green">61.5%</span></td>
+            <td><span style="color:#4ade80;">✓ $98.50 (+6.6%)</span></td>
+            <td><span style="color:#fbbf24;">92.4%</span></td>
+            <td><span class="rank-bar"><span class="rank-fill" style="width:83%;background:#4ade80;"></span></span><span style="color:#4ade80;">83</span></td>
+          </tr>
+          <tr>
+            <td><strong>TQQQ</strong></td>
+            <td class="dim">$51.64</td>
+            <td><span class="bb-bar"><span class="bb-fill" style="left:24%;width:4px;background:#60a5fa;"></span><span class="bb-midline"></span></span><span style="color:#60a5fa;">24%</span></td>
+            <td><span class="badge badge-put">Put</span></td>
+            <td>5/1/2026</td><td><span style="color:#fbbf24;">7</span></td>
+            <td><span class="badge badge-put">Put</span></td>
+            <td><strong>$44.00</strong></td>
+            <td><span style="color:#60a5fa;">0.249</span></td>
+            <td class="dim">$0.78</td><td class="dim">$1.02</td>
+            <td class="green">$0.90</td>
+            <td><span class="green">2.05%</span></td><td><span class="green">106.8%</span></td>
+            <td><span style="color:#4ade80;">✓ $40.20 (+9.5%)</span></td>
+            <td><span style="color:#fbbf24;">85.6%</span></td>
+            <td><span class="rank-bar"><span class="rank-fill" style="width:79%;background:#4ade80;"></span></span><span style="color:#4ade80;">79</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="meta-note">
+      HV Rank: 52-week realized volatility rank (proxy for IV rank). 100 = historically expensive options — better premium.<br>
+      BB Position: where price sits in the 20-day Bollinger Band. &lt;35% = near lower (favor puts), &gt;65% = near upper (favor calls).<br>
+      Sorted by HV Rank descending. Refresh: <code>python3 scripts/scan_options.py</code>
+    </p>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- SCANNER: Sell Put Scanner — All Tickers                              -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>Sell Put Scanner — All Tickers</h2>
+    <p style="font-size:11px; color:#334155; margin-bottom:12px;">Last scan: 4/21/2026, 2:14:08 PM</p>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th><th>Price</th><th>Expiry</th><th>DTE</th>
+            <th>Strike</th><th>Delta</th><th>Bid</th><th>Ask</th><th>Mid</th>
+            <th>Ret%</th><th>Ann%</th><th>BB Lower</th><th>BB Buffer</th><th>IV%</th><th>HV Rank</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>ETHU</strong></td><td class="dim">$18.52</td>
+            <td>5/1/2026</td><td><span style="color:#fbbf24;">7</span></td>
+            <td><strong>$15.00</strong></td><td><span style="color:#60a5fa;">0.248</span></td>
+            <td class="dim">$0.80</td><td class="dim">$1.05</td><td class="green">$0.93</td>
+            <td><span class="green">6.18%</span></td><td><span class="green">322.6%</span></td>
+            <td class="dim">$12.40</td>
+            <td><span style="color:#4ade80;">✓ $12.40 (+20.9%)</span></td>
+            <td><span style="color:#4ade80;">148.2%</span></td>
+            <td><span class="rank-bar"><span class="rank-fill" style="width:98%;background:#4ade80;"></span></span><span style="color:#4ade80;">98</span></td>
+          </tr>
+          <tr>
+            <td><strong>SOFI</strong></td><td class="dim">$24.83</td>
+            <td>5/1/2026</td><td><span style="color:#fbbf24;">7</span></td>
+            <td><strong>$20.00</strong></td><td><span style="color:#60a5fa;">0.247</span></td>
+            <td class="dim">$0.47</td><td class="dim">$0.63</td><td class="green">$0.55</td>
+            <td><span class="green">2.75%</span></td><td><span class="green">143.4%</span></td>
+            <td class="dim">$19.10</td>
+            <td><span style="color:#4ade80;">✓ $19.10 (+4.7%)</span></td>
+            <td><span style="color:#fbbf24;">98.2%</span></td>
+            <td><span class="rank-bar"><span class="rank-fill" style="width:88%;background:#4ade80;"></span></span><span style="color:#4ade80;">88</span></td>
+          </tr>
+          <tr>
+            <td><strong>BMNR</strong></td><td class="dim">$32.76</td>
+            <td>5/1/2026</td><td><span style="color:#fbbf24;">7</span></td>
+            <td><strong>$27.00</strong></td><td><span style="color:#60a5fa;">0.253</span></td>
+            <td class="dim">$0.82</td><td class="dim">$1.15</td><td class="green">$0.99</td>
+            <td><span class="green">3.65%</span></td><td><span class="green">190.3%</span></td>
+            <td class="dim">$26.40</td>
+            <td><span style="color:#4ade80;">✓ $26.40 (+2.3%)</span></td>
+            <td><span style="color:#4ade80;">124.5%</span></td>
+            <td><span class="rank-bar"><span class="rank-fill" style="width:85%;background:#4ade80;"></span></span><span style="color:#4ade80;">85</span></td>
+          </tr>
+          <tr>
+            <td><strong>TNA</strong></td><td class="dim">$28.40</td>
+            <td>5/1/2026</td><td><span style="color:#fbbf24;">7</span></td>
+            <td><strong>$23.00</strong></td><td><span style="color:#60a5fa;">0.246</span></td>
+            <td class="dim">$0.64</td><td class="dim">$0.89</td><td class="green">$0.77</td>
+            <td><span class="green">3.33%</span></td><td><span class="green">173.9%</span></td>
+            <td class="dim">$22.10</td>
+            <td><span style="color:#4ade80;">✓ $22.10 (+4.1%)</span></td>
+            <td><span style="color:#fbbf24;">109.3%</span></td>
+            <td><span class="rank-bar"><span class="rank-fill" style="width:82%;background:#4ade80;"></span></span><span style="color:#4ade80;">82</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="meta-note">
+      Shows the best annualized put for every ticker regardless of BB position or HV rank.<br>
+      Sorted by Ann% descending. BB Buffer: green = strike safely below lower band, red = strike inside band.
+    </p>
+  </section>
+
+
+
+</body>
+</html>

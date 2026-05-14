@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 2 Mockup — Total P&L + Deployable Capital</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f1117; color: #e2e8f0;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px; padding: 24px;
+    }
+    h1 { font-size: 20px; font-weight: 700; color: #f8fafc; margin-bottom: 4px; }
+    .subtitle { color: #64748b; font-size: 12px; margin-bottom: 28px; }
+    h2 {
+      font-size: 13px; font-weight: 600; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid #1e293b;
+    }
+    section { margin-bottom: 44px; }
+
+    .mockup-banner {
+      background: #1c1a0e; border: 1px solid #713f12;
+      border-radius: 6px; padding: 10px 16px;
+      color: #fbbf24; font-size: 12px; margin-bottom: 28px;
+    }
+    .placement-tag {
+      display: inline-block; font-size: 10px; font-weight: 600;
+      background: #1e293b; color: #64748b; border-radius: 3px;
+      padding: 2px 7px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left; padding: 6px 12px; background: #1e293b;
+      color: #94a3b8; font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.06em; white-space: nowrap;
+    }
+    td { padding: 7px 12px; border-bottom: 1px solid #1a2235; white-space: nowrap; }
+    tr:hover td { background: #131929; }
+    tr.row-green  td { background: rgba(74,222,128,0.03); }
+    tr.row-yellow td { background: rgba(251,191,36,0.03); }
+    tr.row-black  td { background: rgba(148,163,184,0.03); }
+    tr:hover td   { background: #131929 !important; }
+    .total-row td { border-top: 1px solid #334155; font-weight: 600; }
+
+    .green  { color: #4ade80; }
+    .red    { color: #f87171; }
+    .yellow { color: #fbbf24; }
+    .dim    { color: #64748b; }
+    .purple { color: #a78bfa; }
+
+    .status-dot {
+      width: 9px; height: 9px; border-radius: 50%; display: inline-block;
+      margin-right: 5px; vertical-align: middle;
+    }
+
+    /* Cards */
+    .card-grid   { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px; }
+    .card-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 16px; }
+    .card {
+      background: #131929; border: 1px solid #1e293b;
+      border-radius: 8px; padding: 16px;
+    }
+    .card-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .card-value { font-size: 22px; font-weight: 700; line-height: 1.1; }
+    .card-sub   { font-size: 11px; color: #64748b; margin-top: 4px; }
+    .split-row  { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; }
+    .split-row.total { font-weight: 600; border-top: 1px solid #1e293b; margin-top: 6px; padding-top: 8px; }
+    hr.divider  { border: none; border-top: 1px solid #1e293b; margin: 10px 0; }
+
+    /* Action alert — prominent underdeploy warning */
+    .action-alert {
+      border-radius: 8px; padding: 20px 24px; margin-bottom: 20px;
+      display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center;
+    }
+    .action-alert.warn {
+      background: #1a1200; border: 2px solid #854d0e;
+    }
+    .action-alert.ok {
+      background: #0a1a0f; border: 2px solid #166534;
+    }
+    .action-alert-title {
+      font-size: 15px; font-weight: 700; margin-bottom: 4px;
+    }
+    .action-alert-body {
+      font-size: 12px; color: #94a3b8; line-height: 1.6;
+    }
+    .action-alert-number {
+      text-align: right;
+    }
+    .action-alert-number .big {
+      font-size: 36px; font-weight: 700; line-height: 1;
+    }
+    .action-alert-number .label {
+      font-size: 11px; color: #64748b; margin-top: 4px;
+    }
+
+    /* Deployment bar */
+    .dep-track {
+      margin: 16px 0;
+    }
+    .dep-labels {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: #64748b; margin-bottom: 5px;
+    }
+    .dep-bar-wrap {
+      position: relative; background: #1e293b;
+      border-radius: 5px; height: 14px; overflow: visible;
+    }
+    .dep-bar-fill {
+      height: 100%; border-radius: 5px;
+      transition: width 0.3s;
+    }
+    .dep-target-line {
+      position: absolute; top: -4px; bottom: -4px;
+      width: 2px; background: #4ade80; border-radius: 1px;
+    }
+    .dep-target-label {
+      position: absolute; top: -18px;
+      font-size: 10px; color: #4ade80; white-space: nowrap;
+      transform: translateX(-50%);
+    }
+
+    /* Month history */
+    .month-row {
+      display: grid; grid-template-columns: 72px 1fr 72px 72px;
+      align-items: center; gap: 10px; padding: 6px 0;
+      border-bottom: 1px solid #1a2235; font-size: 12px;
+    }
+    .month-row:last-child { border-bottom: none; }
+    .mini-bar { height: 7px; border-radius: 3px; }
+    .month-header { color: #64748b; font-size: 11px; border-bottom: 1px solid #334155 !important; padding-bottom: 6px; margin-bottom: 2px; }
+
+    .meta-note { font-size: 11px; color: #475569; margin-top: 8px; }
+  </style>
+</head>
+<body>
+
+<h1>Session 2 Mockup — Total P&L + Deployable Capital</h1>
+<p class="subtitle">Static mockup with illustrative data — approve design before build</p>
+
+<div class="mockup-banner">
+  ⚠ Mockup only — numbers are illustrative based on real account structure. Wired up in Session 2 build.
+</div>
+
+
+<!-- ======================================================================
+     SECTION 1 — Deployment Rate Tracker (ACTION ITEM)
+     Lives in: combined.html — top of Capital Allocation section
+     ====================================================================== -->
+<section>
+  <div class="placement-tag">→ combined.html — Capital Allocation section (top)</div>
+  <h2>Deployment Rate — Am I Working My Capital?</h2>
+
+  <!-- VIX CASH CHECK — separate guardrail -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+
+    <!-- Left: pass/fail + what's deployable above reserve -->
+    <div class="card" style="border-color:#166534;">
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;">
+        <div class="card-label" style="color:#4ade80;margin-bottom:0;">VIX Cash Check</div>
+        <span style="font-size:11px;color:#64748b;">VIX ~18 · Slight Fear</span>
+      </div>
+      <div class="card-value green" style="margin-bottom:10px;">✓ Pass</div>
+      <hr class="divider"/>
+      <div class="split-row"><span class="dim">Required reserve (20–25%)</span><span>$89k–$112k</span></div>
+      <div class="split-row"><span class="dim">Cash on hand (est.)</span><span class="green">$127k</span></div>
+      <div class="split-row total"><span>Excess above reserve</span><span class="green">$15k–$37k</span></div>
+      <hr class="divider"/>
+      <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">What that excess can do</div>
+      <div class="split-row">
+        <span class="dim">→ New CSPs (cash required)</span>
+        <span class="green">$15k–$37k</span>
+      </div>
+      <div class="split-row">
+        <span class="dim">→ CC capacity (uncovered shares)</span>
+        <span class="yellow">$107k–$140k</span>
+      </div>
+      <div style="font-size:11px;color:#475569;margin-top:4px;line-height:1.5;">
+        CC capacity = share value you could cover with calls but haven't yet, within position status limits. No cash needed — just the shares you already hold.
+      </div>
+    </div>
+
+    <!-- Right: VIX zone reference + CC capacity breakdown -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="background:#131929;border:1px solid #1e293b;border-radius:8px;padding:14px 16px;">
+        <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">VIX Zone Reference — Cash Reserve</div>
+        <div style="font-size:12px;line-height:2.2;">
+          <div style="display:flex;justify-content:space-between;"><span class="dim">&lt;12 Extreme Greed</span><span>40–50% cash</span></div>
+          <div style="display:flex;justify-content:space-between;"><span class="dim">12–15 Greed</span><span>30–40% cash</span></div>
+          <div style="display:flex;justify-content:space-between;background:rgba(74,222,128,0.06);padding:0 4px;border-radius:3px;"><span style="color:#4ade80;">→ 15–20 Slight Fear</span><span style="color:#4ade80;">20–25% cash ✓</span></div>
+          <div style="display:flex;justify-content:space-between;"><span class="dim">20–25 Fear</span><span>10–15% cash</span></div>
+          <div style="display:flex;justify-content:space-between;"><span class="dim">≥30 Extreme Fear</span><span>0–5% cash</span></div>
+        </div>
+      </div>
+      <div style="background:#131929;border:1px solid #1e293b;border-radius:8px;padding:14px 16px;">
+        <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Uncovered CC Capacity — by Position</div>
+        <div style="font-size:12px;line-height:2.1;">
+          <div style="display:flex;justify-content:space-between;">
+            <span><span class="status-dot" style="background:#4ade80;"></span><span class="dim">HOOD</span> <span style="color:#64748b;font-size:11px;">500 shares uncovered</span></span>
+            <span class="green">$41,940</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span><span class="status-dot" style="background:#fbbf24;"></span><span class="dim">PLTR</span> <span style="color:#64748b;font-size:11px;">200–300 shares (50–75%)</span></span>
+            <span class="yellow">$28k–$43k</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span><span class="status-dot" style="background:#fbbf24;"></span><span class="dim">SOFI</span> <span style="color:#64748b;font-size:11px;">1,950–2,925 shares (50–75%)</span></span>
+            <span class="yellow">$36k–$55k</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;border-top:1px solid #1e293b;margin-top:6px;padding-top:6px;font-weight:600;">
+            <span>Total CC capacity</span>
+            <span class="yellow">$107k–$140k</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BIG ACTION ALERT — position-status derived only -->
+  <div class="action-alert warn">
+    <div>
+      <div class="action-alert-title" style="color:#fbbf24;">⚠ You are underdeployed given your current position statuses</div>
+      <div class="action-alert-body">
+        Your positions allow <strong style="color:#e2e8f0;">$260k–$293k</strong> in responsible deployment. You are at <strong style="color:#fbbf24;">$152k (33.9%)</strong>.<br>
+        🟢 Green = 100% · 🟡 Yellow = 50–75% · ⚫ Black = 0% · <strong style="color:#e2e8f0;">$108k–$141k</strong> can be responsibly added now.<br>
+        At 1% weekly that's an estimated <strong style="color:#f87171;">$1,080–$1,410/week</strong> in missed income.
+      </div>
+    </div>
+    <div class="action-alert-number">
+      <div class="big" style="color:#f87171;">$125k</div>
+      <div class="label">to responsibly deploy</div>
+    </div>
+  </div>
+
+  <!-- Deployment bar — position-status ceiling only -->
+  <div class="dep-track">
+    <div class="dep-labels">
+      <span>0%</span>
+      <span>Current: <strong style="color:#fbbf24;">33.9%</strong></span>
+      <span>Position-status ceiling: <strong style="color:#4ade80;">61–65%</strong></span>
+      <span>100%</span>
+    </div>
+    <div class="dep-bar-wrap">
+      <div class="dep-bar-fill" style="width:33.9%;background:#fbbf24;"></div>
+      <div class="dep-target-line" style="left:58%;"></div>
+      <div class="dep-target-line" style="left:65%;background:#22c55e;opacity:0.5;"></div>
+      <div class="dep-target-label" style="left:61.5%;">position ceiling</div>
+    </div>
+  </div>
+
+  <!-- Three stat cards -->
+  <div class="card-grid" style="margin-top:16px;">
+    <div class="card">
+      <div class="card-label">Currently Deployed</div>
+      <div class="card-value yellow">33.9%</div>
+      <div class="card-sub">$151,976 of $448,128 account</div>
+      <hr class="divider"/>
+      <div class="split-row"><span class="dim">CSP collateral</span><span class="yellow">$25,000</span></div>
+      <div class="split-row"><span class="dim">CC position value</span><span class="yellow">$126,976</span></div>
+      <div class="split-row total"><span>Total at risk</span><span class="yellow">$151,976</span></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Position-Status Ceiling</div>
+      <div class="card-value green">$260k–$293k</div>
+      <div class="card-sub">max responsible deployment from positions</div>
+      <hr class="divider"/>
+      <div class="split-row"><span class="dim">🟢 Green (100%)</span><span class="green">$168,916</span></div>
+      <div class="split-row"><span class="dim">🟡 Yellow (50–75%)</span><span class="yellow">$65k–$98k</span></div>
+      <div class="split-row"><span class="dim">⚫ Black (0%)</span><span class="dim">$0</span></div>
+      <div class="split-row total"><span>Gap to ceiling</span><span class="red">$108k–$141k</span></div>
+    </div>
+    <div class="card" style="border-color:#854d0e;">
+      <div class="card-label" style="color:#fbbf24;">Missed Income Estimate</div>
+      <div class="card-value red">$1,080–$1,410</div>
+      <div class="card-sub">per week at avg 1% weekly return</div>
+      <hr class="divider"/>
+      <div class="split-row"><span class="dim">Deployable gap</span><span>$108k–$141k</span></div>
+      <div class="split-row"><span class="dim">× 1% weekly return</span><span></span></div>
+      <div class="split-row total"><span>= weekly missed income</span><span class="red">$1,080–$1,410</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     SECTION 2 — Effective Deployable Capital + Adjusted Monthly Goal
+     Lives in: combined.html — below deployment rate
+     ====================================================================== -->
+<section>
+  <div class="placement-tag">→ combined.html — below deployment section</div>
+  <h2>Effective Deployable Capital &amp; Adjusted Monthly Goal</h2>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Responsibly Deployable Capital</div>
+      <div class="card-value green">$260k–$293k</div>
+      <div class="card-sub">VIX intent + position status applied</div>
+      <hr class="divider"/>
+      <div class="split-row"><span class="dim">🟢 Green positions (100%)</span><span class="green">$168,916</span></div>
+      <div class="split-row"><span class="dim">🟡 Yellow positions (50–75%)</span><span class="yellow">$65k–$98k</span></div>
+      <div class="split-row"><span class="dim">⚫ Black positions (0%)</span><span class="dim">$0</span></div>
+      <div class="split-row"><span class="dim">Cash for CSPs</span><span class="green">$26,241</span></div>
+      <div class="split-row total"><span>= Total responsibly deployable</span><span class="green">$260k–$293k</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Adjusted Monthly Goal</div>
+      <div class="card-value yellow">$5,960</div>
+      <div class="card-sub">vs fixed goal of $8,000</div>
+      <hr class="divider"/>
+      <div class="split-row"><span class="dim">Fixed monthly goal</span><span>$8,000</span></div>
+      <div class="split-row"><span class="dim">Reduction from ⚫ positions</span><span class="red">−$2,040</span></div>
+      <div class="split-row total"><span>Realistic target this month</span><span class="yellow">$5,960</span></div>
+      <div style="font-size:11px;color:#475569;margin-top:10px;">
+        Gap to fixed goal = $2,040 · requires new positions or accepting a lower month
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Required Return on Deployable</div>
+      <div class="card-value purple">2.50%</div>
+      <div class="card-sub">to hit adjusted $5,960 target</div>
+      <hr class="divider"/>
+      <div class="split-row"><span class="dim">On fixed $8k goal</span><span>3.36%</span></div>
+      <div class="split-row"><span class="dim">On adjusted goal</span><span class="purple">2.50%</span></div>
+      <div class="split-row"><span class="dim">VIX zone range</span><span>~1.8–3.5%</span></div>
+      <div style="font-size:11px;color:#4ade80;margin-top:10px;">✓ Adjusted target is within VIX-zone range</div>
+    </div>
+  </div>
+
+  <!-- Per-position deployable breakdown -->
+  <table>
+    <thead>
+      <tr><th>Status</th><th>Ticker</th><th>Shares</th><th>Position Value</th><th>Deploy %</th><th>Deployable Amount</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr class="row-green">
+        <td><span class="status-dot" style="background:#4ade80"></span><span class="green">Green</span></td>
+        <td><strong>HOOD</strong></td><td>1,500</td><td class="purple">$125,820</td>
+        <td class="green">100%</td>
+        <td class="green">$125,820</td>
+        <td class="dim">At/above basis — full deployment</td>
+      </tr>
+      <tr class="row-green">
+        <td><span class="status-dot" style="background:#4ade80"></span><span class="green">Green</span></td>
+        <td><strong>NVDA</strong></td><td>200</td><td class="purple">$43,096</td>
+        <td class="green">100%</td>
+        <td class="green">$43,096</td>
+        <td class="dim">At/above basis — full deployment</td>
+      </tr>
+      <tr class="row-yellow">
+        <td><span class="status-dot" style="background:#fbbf24"></span><span class="yellow">Yellow</span></td>
+        <td><strong>PLTR</strong></td><td>400</td><td class="purple">$57,353</td>
+        <td class="yellow">50–75%</td>
+        <td class="yellow">$28,676–$43,015</td>
+        <td class="dim">5–15% below basis — partial coverage</td>
+      </tr>
+      <tr class="row-yellow">
+        <td><span class="status-dot" style="background:#fbbf24"></span><span class="yellow">Yellow</span></td>
+        <td><strong>SOFI</strong></td><td>3,900</td><td class="purple">$73,106</td>
+        <td class="yellow">50–75%</td>
+        <td class="yellow">$36,553–$54,830</td>
+        <td class="dim">5–15% below basis — partial coverage</td>
+      </tr>
+      <tr class="row-black">
+        <td><span class="status-dot" style="background:#94a3b8"></span><span class="dim">Black</span></td>
+        <td><strong>BMNR</strong></td><td>1,000</td><td class="red">$21,685</td>
+        <td class="dim">0%</td>
+        <td class="dim">$0</td>
+        <td class="dim">30%+ below basis — hold, protect recovery</td>
+      </tr>
+      <tr class="row-green" style="background:rgba(74,222,128,0.03);">
+        <td colspan="3" class="dim">Cash available for CSPs</td>
+        <td class="purple">$26,241</td>
+        <td class="green">100%</td>
+        <td class="green">$26,241</td>
+        <td class="dim">After cash buffer deducted</td>
+      </tr>
+      <tr class="total-row">
+        <td colspan="5">Total responsibly deployable</td>
+        <td class="green">$260k–$293k</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="meta-note">Deploy % = position status coverage ratio. Yellow = 50–75% of position value can be used for covered calls. Black = 0% (don't add exposure). Deployable amount range reflects the 50–75% band on yellow positions.</p>
+</section>
+
+
+<!-- ======================================================================
+     SECTION 3 — Total Position P&L
+     Lives in: positions.html — new section below Covered Call Coverage
+     ====================================================================== -->
+<section>
+  <div class="placement-tag">→ positions.html — below Covered Call Coverage</div>
+  <h2>Total Position P&L — Options Income + Stock Movement</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Status</th>
+        <th>Ticker</th>
+        <th>Shares</th>
+        <th>Unrealized Stock P&L</th>
+        <th>This Month Net</th>
+        <th>YTD Net Premium</th>
+        <th>Total Position P&L</th>
+        <th>Verdict</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="row-green">
+        <td><span class="status-dot" style="background:#4ade80"></span><span class="green">Green</span></td>
+        <td><strong>HOOD</strong></td><td>1,500</td>
+        <td><span class="green">+$2,430</span></td>
+        <td><span class="green">+$680</span></td>
+        <td><span class="green">+$7,016</span></td>
+        <td><span class="green" style="font-weight:600">+$9,446</span></td>
+        <td><span style="color:#4ade80;font-size:11px;">✓ Working</span></td>
+      </tr>
+      <tr class="row-green">
+        <td><span class="status-dot" style="background:#4ade80"></span><span class="green">Green</span></td>
+        <td><strong>NVDA</strong></td><td>200</td>
+        <td><span class="green">+$4,764</span></td>
+        <td><span class="dim">—</span></td>
+        <td><span class="green">+$1,240</span></td>
+        <td><span class="green" style="font-weight:600">+$6,004</span></td>
+        <td><span style="color:#4ade80;font-size:11px;">✓ Working</span></td>
+      </tr>
+      <tr class="row-yellow">
+        <td><span class="status-dot" style="background:#fbbf24"></span><span class="yellow">Yellow</span></td>
+        <td><strong>PLTR</strong></td><td>400</td>
+        <td><span class="red">−$6,723</span></td>
+        <td><span class="dim">—</span></td>
+        <td><span class="green">+$3,387</span></td>
+        <td><span class="red" style="font-weight:600">−$3,336</span></td>
+        <td><span style="color:#fbbf24;font-size:11px;">~ Premium offsetting loss</span></td>
+      </tr>
+      <tr class="row-yellow">
+        <td><span class="status-dot" style="background:#fbbf24"></span><span class="yellow">Yellow</span></td>
+        <td><strong>SOFI</strong></td><td>3,900</td>
+        <td><span class="red">−$4,075</span></td>
+        <td><span class="green">+$232</span></td>
+        <td><span class="green">+$6,420</span></td>
+        <td><span class="green" style="font-weight:600">+$2,345</span></td>
+        <td><span style="color:#4ade80;font-size:11px;">✓ Premium covering loss</span></td>
+      </tr>
+      <tr class="row-black">
+        <td><span class="status-dot" style="background:#94a3b8"></span><span class="dim">Black</span></td>
+        <td><strong>BMNR</strong></td><td>1,000</td>
+        <td><span class="red">−$10,145</span></td>
+        <td><span class="dim">—</span></td>
+        <td><span class="green">+$1,800</span></td>
+        <td><span class="red" style="font-weight:600">−$8,345</span></td>
+        <td><span style="color:#f87171;font-size:11px;">⚠ Options not covering loss</span></td>
+      </tr>
+      <tr class="total-row">
+        <td colspan="3">Total</td>
+        <td><span class="red">−$13,749</span></td>
+        <td><span class="green">+$912</span></td>
+        <td><span class="green">+$19,863</span></td>
+        <td><span class="green" style="font-weight:700">+$6,114</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="meta-note">
+    Unrealized P&L = (current price − cost basis) × shares held. This Month = current calendar month net premium. YTD = full CSV history net.<br>
+    Total Position P&L = unrealized stock gain/loss + YTD net premium. Only tickers with share holdings shown.
+  </p>
+</section>
+
+
+<!-- ======================================================================
+     SECTION 4 — Deployment Rate Monthly History (READOUT)
+     Lives in: combined.html — below adjusted goal section
+     ====================================================================== -->
+<section>
+  <div class="placement-tag">→ combined.html — historical readout</div>
+  <h2>Deployment Rate — Monthly History</h2>
+  <p class="meta-note" style="margin-bottom:14px;">Historical pattern: does higher deployment produce proportionally more income?</p>
+
+  <div style="max-width:580px;">
+    <div class="month-row month-header">
+      <span>Month</span><span>Deployment %</span><span style="text-align:right;">Net Premium</span><span style="text-align:right;">Dep %</span>
+    </div>
+    <div class="month-row">
+      <span class="dim">Jan 2026</span>
+      <span><div class="mini-bar" style="width:62%;background:#4ade80;"></div></span>
+      <span style="text-align:right;" class="green">$4,820</span>
+      <span style="text-align:right;color:#64748b;">62%</span>
+    </div>
+    <div class="month-row">
+      <span class="dim">Feb 2026</span>
+      <span><div class="mini-bar" style="width:71%;background:#4ade80;"></div></span>
+      <span style="text-align:right;" class="green">$6,240</span>
+      <span style="text-align:right;color:#64748b;">71%</span>
+    </div>
+    <div class="month-row">
+      <span class="dim">Mar 2026</span>
+      <span><div class="mini-bar" style="width:45%;background:#fbbf24;"></div></span>
+      <span style="text-align:right;" class="yellow">$2,910</span>
+      <span style="text-align:right;color:#64748b;">45%</span>
+    </div>
+    <div class="month-row">
+      <span class="dim">Apr 2026</span>
+      <span><div class="mini-bar" style="width:38%;background:#fbbf24;"></div></span>
+      <span style="text-align:right;" class="yellow">$3,180</span>
+      <span style="text-align:right;color:#64748b;">38%</span>
+    </div>
+    <div class="month-row" style="background:rgba(251,191,36,0.04);">
+      <span style="color:#fbbf24;">May 2026</span>
+      <span><div class="mini-bar" style="width:34%;background:#f87171;"></div></span>
+      <span style="text-align:right;" class="red">$913</span>
+      <span style="text-align:right;color:#f87171;">34%</span>
+    </div>
+  </div>
+  <p class="meta-note" style="margin-top:10px;">
+    Deployment = (CSP collateral + CC value) / account balance at end of month.<br>
+    Months with deployment &gt;60% consistently produced more income — confirms the rule.
+  </p>
+</section>
+
+</body>
+</html>
