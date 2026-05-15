@@ -244,11 +244,11 @@
     <div class="settings-row-grid">
       <div class="input-group">
         <label class="input-label">GitHub personal access token</label>
-        <input class="input-field" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
+        <input id="cfg-token" class="input-field" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
       </div>
       <div class="input-group">
         <label class="input-label">Gist ID</label>
-        <input class="input-field" type="text" placeholder="abc123def456..." />
+        <input id="cfg-gist" class="input-field" type="text" placeholder="abc123def456..." />
       </div>
     </div>
     <div class="settings-hint">Token needs only <strong style="color:#64748b;">gist</strong> scope · stored in browser localStorage · never sent anywhere except api.github.com</div>
@@ -887,11 +887,14 @@
   }
 
   function saveSettings() {
-    const token  = document.getElementById('cfg-token').value.trim();
-    const gistId = document.getElementById('cfg-gist').value.trim();
+    const tokenEl  = document.getElementById('cfg-token');
+    const gistEl   = document.getElementById('cfg-gist');
+    if (!tokenEl || !gistEl) { console.error('saveSettings: input elements not found'); setSyncStatus('error'); return; }
+    const token  = tokenEl.value.trim();
+    const gistId = gistEl.value.trim();
     if (token)  localStorage.setItem(LS_TOKEN, token);
     if (gistId) localStorage.setItem(LS_GIST,  gistId);
-    document.getElementById('cfg-token').value = '';
+    tokenEl.value = '';
     toggleSettings();
     syncFromGist();
   }
