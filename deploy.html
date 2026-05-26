@@ -224,6 +224,117 @@
 
     .empty-state { color: #334155; font-size: 13px; text-align: center; padding: 20px; }
     .footer-note { text-align: center; color: #1e293b; font-size: 11px; margin-top: 8px; padding-bottom: 24px; }
+
+    /* ── Pulse tab ── */
+    .pulse-composite {
+      border-radius: 7px; padding: 14px 16px; margin-bottom: 12px;
+      background: #0d1220; border: 1px solid #3730a3;
+    }
+    .pulse-comp-row { display: flex; align-items: center; gap: 16px; }
+    .pulse-comp-score { font-size: 48px; font-weight: 700; line-height: 1; }
+    .pulse-comp-right { flex: 1; }
+    .pulse-comp-label { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .pulse-bar-track  { height: 5px; background: #1e293b; border-radius: 999px; position: relative; overflow: visible; }
+    .pulse-bar-fill   {
+      height: 100%; width: 100%; border-radius: 999px;
+      background: linear-gradient(90deg, #ef4444 0%, #fbbf24 45%, #4ade80 100%);
+    }
+    .pulse-bar-marker {
+      position: absolute; top: -5px;
+      width: 14px; height: 14px; background: #e2e8f0;
+      border-radius: 50%; border: 2px solid #0f1117; transform: translateX(-50%);
+    }
+    .pulse-bar-labels { display: flex; justify-content: space-between; font-size: 9px; color: #334155; margin-top: 5px; }
+    .pulse-comp-desc  { margin-top: 10px; font-size: 12px; color: #64748b; line-height: 1.5; }
+    .pulse-comp-desc strong { color: #e2e8f0; }
+
+    .pulse-signal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .pulse-signal-card {
+      background: #161b27; border: 1px solid #1e293b; border-radius: 8px;
+      padding: 12px 12px 10px; position: relative;
+    }
+    .pulse-signal-card.wide { grid-column: 1 / -1; }
+    .pulse-sig-name  { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; padding-right: 22px; }
+    .pulse-sig-val   { font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 3px; }
+    .pulse-sig-sub   { font-size: 11px; color: #475569; margin-bottom: 7px; }
+    .pulse-sig-pill  {
+      display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
+      padding: 2px 7px; border-radius: 3px; text-transform: uppercase;
+    }
+    .pulse-pill-green  { background: #052e16; color: #4ade80; }
+    .pulse-pill-yellow { background: #1c1505; color: #fbbf24; }
+    .pulse-pill-red    { background: #2d0a0a; color: #f87171; }
+
+    .pulse-spark { width: 100%; height: 30px; display: block; margin-top: 8px; overflow: visible; }
+
+    /* info button */
+    .pulse-info-btn {
+      position: absolute; top: 9px; right: 9px;
+      width: 19px; height: 19px; border-radius: 50%;
+      background: #1e293b; border: 1px solid #334155;
+      color: #475569; font-size: 10px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .pulse-info-btn:hover { color: #94a3b8; border-color: #475569; }
+
+    .pulse-section-label { font-size: 10px; color: #334155; text-transform: uppercase; letter-spacing: 0.1em; margin: 12px 0 8px; }
+
+    .pulse-stale { color: #334155; font-size: 12px; text-align: center; padding: 32px 16px; line-height: 1.8; }
+    .pulse-stale code { background: #161b27; border: 1px solid #1e293b; padding: 2px 6px; border-radius: 3px; font-size: 11px; color: #38bdf8; }
+    .pulse-updated { font-size: 11px; color: #334155; margin-bottom: 12px; }
+
+    /* bottom sheet */
+    .pulse-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7); z-index: 200;
+    }
+    .pulse-backdrop.open { display: block; }
+    .pulse-sheet {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
+      width: 100%; max-width: 760px;
+      background: #161b27; border-radius: 14px 14px 0 0;
+      border-top: 1px solid #334155;
+      z-index: 201; transition: transform 0.26s cubic-bezier(0.32,0.72,0,1);
+      max-height: 85vh; overflow-y: auto; padding-bottom: 32px;
+    }
+    .pulse-sheet.open { transform: translateX(-50%) translateY(0); }
+    .pulse-sheet-handle { width: 36px; height: 4px; background: #334155; border-radius: 2px; margin: 10px auto 0; }
+    .pulse-sheet-hdr {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 18px 12px; border-bottom: 1px solid #1e293b;
+    }
+    .pulse-sheet-title { font-size: 14px; font-weight: 700; color: #e2e8f0; }
+    .pulse-sheet-close {
+      width: 26px; height: 26px; border-radius: 50%; background: #1e293b;
+      border: 1px solid #334155; color: #475569; font-size: 13px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .pulse-sheet-body  { padding: 14px 18px; }
+    .pulse-sheet-desc  { font-size: 13px; color: #64748b; line-height: 1.65; margin: 10px 0 14px; }
+    .pulse-sheet-desc strong { color: #94a3b8; }
+    .pulse-why-box {
+      background: #0d1220; border: 1px solid #1e293b; border-radius: 6px;
+      padding: 12px 14px; margin-bottom: 14px;
+    }
+    .pulse-why-title { font-size: 10px; color: #38bdf8; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
+    .pulse-why-body  { font-size: 12px; color: #64748b; line-height: 1.6; }
+    .pulse-why-body strong { color: #94a3b8; }
+    .pulse-chart-wrap  { background: #0d1220; border-radius: 6px; padding: 10px; margin-bottom: 14px; }
+    .pulse-chart-title { font-size: 10px; color: #334155; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; font-weight: 600; }
+    svg.pulse-history  { width: 100%; height: 80px; display: block; overflow: visible; }
+    .pulse-chart-xlabels { display: flex; justify-content: space-between; font-size: 9px; color: #334155; margin-top: 3px; }
+    .pulse-ref-legend  { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+    .pulse-ref-item    { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #475569; }
+    .pulse-ref-dash    { width: 18px; height: 2px; border-radius: 1px; }
+    .pulse-src-link {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #0d1220; border: 1px solid #1e293b; border-radius: 6px;
+      padding: 10px 13px; text-decoration: none; color: #e2e8f0; margin-bottom: 7px;
+    }
+    .pulse-src-link:hover { border-color: #38bdf8; }
+    .pulse-src-link span:first-child  { display: block; font-size: 10px; color: #334155; margin-bottom: 2px; }
+    .pulse-src-link span:nth-child(2) { font-size: 12px; font-weight: 600; color: #38bdf8; }
+    .pulse-src-arrow { font-size: 14px; color: #334155; }
   </style>
 </head>
 <body>
@@ -262,6 +373,7 @@
   <div class="tab-bar">
     <button class="tab-btn active" onclick="switchTab('deploy', this)">Deploy</button>
     <button class="tab-btn" onclick="switchTab('journal', this)">Journal</button>
+    <button class="tab-btn" onclick="switchTab('pulse', this); loadPulse()">Pulse</button>
   </div>
 
   <!-- ══ DEPLOY TAB ══ -->
@@ -440,6 +552,40 @@
     <div id="journal-empty" class="empty-state" style="display:none;">No entries yet.</div>
 
   </div><!-- /tab-journal -->
+
+
+  <!-- ══ PULSE TAB ══ -->
+  <div class="tab-pane" id="tab-pulse">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <div class="pulse-updated" id="pulse-updated">Not loaded yet</div>
+      <button class="btn-ghost" style="font-size:12px;" onclick="loadPulse(true)">↻ Refresh</button>
+    </div>
+    <div id="pulse-content">
+      <div class="pulse-stale">
+        Tap <strong style="color:#e2e8f0;">↻ Refresh</strong> to load market data.<br><br>
+        To regenerate locally, run:<br>
+        <code>python3 scripts/fetch_vix.py</code><br>
+        <code>python3 scripts/fetch_fear_greed.py</code><br>
+        <code>python3 scripts/fetch_breadth.py</code><br>
+        <code>python3 scripts/fetch_spread.py</code><br>
+        <code>python3 scripts/fetch_aaii.py</code><br>
+        <code>python3 scripts/fetch_pcr.py</code><br>
+        <code>python3 scripts/fetch_hvrank_spx.py</code><br>
+        <code>python3 scripts/pulse_composite.py</code>
+      </div>
+    </div>
+  </div><!-- /tab-pulse -->
+
+  <!-- Pulse bottom sheet -->
+  <div class="pulse-backdrop" id="pulseBackdrop" onclick="closePulseSheet()"></div>
+  <div class="pulse-sheet" id="pulseSheet">
+    <div class="pulse-sheet-handle"></div>
+    <div class="pulse-sheet-hdr">
+      <div class="pulse-sheet-title" id="pulseSheetTitle"></div>
+      <button class="pulse-sheet-close" onclick="closePulseSheet()">✕</button>
+    </div>
+    <div class="pulse-sheet-body" id="pulseSheetBody"></div>
+  </div>
 
   <div class="footer-note">Stored in browser localStorage · sync via GitHub Gist once connected</div>
 
@@ -867,6 +1013,296 @@
       }).join('');
       return `<div class="week-group"><div class="week-heading">${weekLabel(wk)}</div>${entries}</div>`;
     }).join('');
+  }
+
+  // ── Pulse ──────────────────────────────────────────────────────────────────
+  let pulseData   = null;
+  let pulseLoaded = false;
+
+  const PULSE_META = {
+    vix:     { name: "VIX",              desc: "The <strong>CBOE VIX</strong> measures the market's expected 30-day S&P 500 volatility derived from options prices. Called the \"fear gauge\" — spikes when traders rush to buy puts for protection.", why: "VIX directly sets the <strong>premium you collect</strong> when selling. VIX 15 = thin. VIX 25+ = fat. Rising VIX means higher premium but also higher assignment risk — size accordingly.", refs: [{color:"#4ade80",label:"< 15 Calm (thin premium)"},{color:"#fbbf24",label:"20–25 Fear zone"},{color:"#f87171",label:"> 30 Crisis (max premium)"}], src: "CBOE VIX", srcUrl: "https://www.cboe.com/tradable_products/vix/", src2: "Yahoo Finance ^VIX", src2Url: "https://finance.yahoo.com/quote/%5EVIX/" },
+    hy:      { name: "HY Credit Spread", desc: "The <strong>ICE BofA HY OAS</strong> is the extra yield junk bond investors demand over equivalent Treasuries. Strips out interest rate effects to isolate pure default risk premium.", why: "Bond institutions are faster and better-capitalized than retail. When HY spreads <strong>peak and begin compressing</strong>, institutional money is re-entering risk assets. Historically leads equity bottoms by 1–4 weeks.", refs: [{color:"#4ade80",label:"< 300 bps Calm"},{color:"#fbbf24",label:"400–600 bps Stress"},{color:"#f87171",label:"> 800 bps Crisis"}], src: "FRED BAMLH0A0HYM2", srcUrl: "https://fred.stlouisfed.org/series/BAMLH0A0HYM2", src2: "ICE BofA Index", src2Url: "https://fred.stlouisfed.org/series/BAMLH0A0HYM2#" },
+    pcr:     { name: "Put/Call Ratio",   desc: "Compares put volume vs call volume across CBOE exchanges. Above 1.0 means more puts than calls — investors are paying up for downside protection, signaling fear and crowded bearish positioning.", why: "High P/C = crowded short. When everyone has bought puts, <strong>the panic is already priced in</strong>. P/C above 1.2 has historically marked short-term market bottoms within 1–3 weeks.", refs: [{color:"#f87171",label:"< 0.7 Greed (avoid selling)"},{color:"#fbbf24",label:"0.8–1.0 Neutral"},{color:"#4ade80",label:"> 1.2 Elevated fear (sell aggressively)"}], src: "CBOE Daily Statistics", srcUrl: "https://www.cboe.com/us/options/market_statistics/daily/", src2: "Barchart P/C Charts", src2Url: "https://www.barchart.com/options/put-call-ratios/large-options" },
+    breadth: { name: "Breadth % >50MA",  desc: "<strong>Market breadth</strong> counts what % of S&P 500 stocks trade above their 50-day moving average. Low % means the index is held up by a few mega-cap names while most stocks are in downtrends.", why: "Narrow breadth is a warning — the index looks fine but most names are vulnerable. Below 30% is typically capitulation. For CSPs, <strong>low breadth means more individual stocks are at risk</strong> of breakdowns.", refs: [{color:"#f87171",label:"< 30% Capitulation"},{color:"#fbbf24",label:"30–50% Stressed"},{color:"#4ade80",label:"> 70% Healthy"}], src: "StockCharts $SPXA50R", srcUrl: "https://stockcharts.com/freecharts/gallery.html?%24SPXA50R", src2: "Yahoo Finance ^SPXA50R", src2Url: "https://finance.yahoo.com/quote/%5ESPXA50R/" },
+    fg:      { name: "Fear & Greed",     desc: "CNN's composite of 7 signals: momentum, strength, breadth, put/call, junk bond demand, volatility, and safe-haven demand. Scored 0–100. Below 25 = Extreme Fear; above 75 = Extreme Greed.", why: "At extreme fear (&lt;25), bad news is largely priced in — a strong time to sell CSPs. At extreme greed (&gt;75), premium is cheap and downside risk is underappreciated. <strong>Reduce size and widen strikes.</strong>", refs: [{color:"#f87171",label:"< 25 Extreme Fear (best to sell)"},{color:"#fbbf24",label:"25–45 Fear"},{color:"#4ade80",label:"> 75 Extreme Greed (reduce size)"}], src: "CNN Fear & Greed Index", srcUrl: "https://www.cnn.com/markets/fear-and-greed", src2: null, src2Url: null },
+    aaii:    { name: "AAII Bull−Bear",   desc: "<strong>AAII</strong> surveys ~1,000 retail investors weekly: \"Will the market be higher or lower in 6 months?\" Bull−Bear spread = % bullish minus % bearish. Long-run avg is +6. Published every Thursday.", why: "Retail investors are <strong>historically wrong at extremes</strong>. Spread ≤ −20 (more bears than bulls by 20+ points) has preceded above-average 6-month S&P returns. Strong support for deploying CSPs.", refs: [{color:"#4ade80",label:"< −20 Extreme Bearish (contrarian buy)"},{color:"#fbbf24",label:"−10 to +10 Neutral"},{color:"#f87171",label:"> +30 Extreme Bullish (reduce size)"}], src: "AAII Sentiment Survey", srcUrl: "https://www.aaii.com/sentimentsurvey", src2: "AAII Historical Data", src2Url: "https://www.aaii.com/sentimentsurvey/senthist" },
+    curve:   { name: "2s10s Yield Curve",desc: "The <strong>10yr minus 2yr Treasury yield</strong>. Positive = normal curve. Negative (inverted) = short rates exceed long rates — the most reliable historical recession predictor (leads by 12–24 months).", why: "Inverted curve = recession likely. Recessions bring sustained drawdowns, not V-recoveries. When inverted: <strong>widen strikes, shorten DTE, hold more cash</strong>. Re-steepening (now): economy normalizing — OK to extend.", refs: [{color:"#f87171",label:"< 0% Inverted (caution)"},{color:"#fbbf24",label:"0–0.5% Flat/normalizing"},{color:"#4ade80",label:"> 1% Healthy steepness"}], src: "FRED T10Y2Y", srcUrl: "https://fred.stlouisfed.org/series/T10Y2Y", src2: "US Treasury Yield Curve", src2Url: "https://home.treasury.gov/policy-issues/financing-the-government/interest-rate-statistics" },
+  };
+
+  async function loadPulse(force = false) {
+    if (pulseLoaded && !force) return;
+
+    const token  = getToken();
+    const gistId = getGistId();
+
+    // Try Gist first (works on phone), fall back to local file
+    if (token && gistId) {
+      try {
+        const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json',
+          },
+        });
+        if (!res.ok) throw new Error(`Gist HTTP ${res.status}`);
+        const gist = await res.json();
+        const file = gist.files['market-pulse.json'];
+        if (!file) throw new Error('market-pulse.json not in Gist yet — run run_pulse.sh first');
+        pulseData   = JSON.parse(file.content);
+        pulseLoaded = true;
+        renderPulse();
+        return;
+      } catch (e) {
+        document.getElementById('pulse-updated').textContent = '⚠ ' + e.message;
+      }
+    }
+
+    // Fallback: local file (works when opened directly from disk)
+    try {
+      const res = await fetch('./output/market_pulse.json?t=' + Date.now());
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      pulseData   = await res.json();
+      pulseLoaded = true;
+      renderPulse();
+    } catch (e) {
+      document.getElementById('pulse-updated').textContent =
+        token ? 'Could not load — run run_pulse.sh then push to Gist' : 'Connect Gist in ⚙ Sync, then run run_pulse.sh';
+    }
+  }
+
+  function pillCls(status) {
+    return status === 'green' ? 'pulse-pill-green' : status === 'red' ? 'pulse-pill-red' : 'pulse-pill-yellow';
+  }
+
+  function valColor(status) {
+    return status === 'green' ? '#4ade80' : status === 'red' ? '#f87171' : '#fbbf24';
+  }
+
+  function makeSpark(history, color) {
+    if (!history || history.length < 2) return '';
+    const vals = history.filter(v => v != null && !isNaN(v));
+    if (vals.length < 2) return '';
+    const mn = Math.min(...vals), mx = Math.max(...vals);
+    const range = mx - mn || 1;
+    const w = 100, h = 30;
+    const pts = vals.map((v, i) => {
+      const x = (i / (vals.length - 1)) * w;
+      const y = h - ((v - mn) / range) * (h - 4) - 2;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+    return `<svg class="pulse-spark" viewBox="0 0 100 30" preserveAspectRatio="none">
+      <polyline fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="${pts}"/>
+    </svg>`;
+  }
+
+  function makeHistoryChart(history, color, refLines) {
+    if (!history || history.length < 2) return '<div style="color:#334155;font-size:12px;text-align:center;padding:16px;">No history data</div>';
+    const vals = history.filter(v => v != null && !isNaN(v));
+    if (vals.length < 2) return '';
+    const mn = Math.min(...vals), mx = Math.max(...vals);
+    const pad = (mx - mn) * 0.1 || 1;
+    const lo = mn - pad, hi = mx + pad, range = hi - lo;
+    const W = 280, H = 80;
+    const toY = v => H - ((v - lo) / range) * (H - 6) - 3;
+    const pts = vals.map((v, i) => `${((i / (vals.length - 1)) * W).toFixed(1)},${toY(v).toFixed(1)}`).join(' ');
+    const lastY = toY(vals[vals.length - 1]);
+
+    let refSvg = '';
+    (refLines || []).forEach(r => {
+      if (r.y != null) {
+        refSvg += `<line x1="0" y1="${r.y}" x2="${W}" y2="${r.y}" stroke="${r.color}" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>`;
+      }
+    });
+
+    return `<svg class="pulse-history" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      <line x1="0" y1="${H}" x2="${W}" y2="${H}" stroke="#1e293b" stroke-width="0.5"/>
+      <line x1="0" y1="${H*0.5}" x2="${W}" y2="${H*0.5}" stroke="#1e293b" stroke-width="0.5"/>
+      ${refSvg}
+      <defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${color}" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+      </linearGradient></defs>
+      <polygon fill="url(#pg)" points="0,${H} ${pts} ${W},${H}"/>
+      <polyline fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="${pts}"/>
+      <circle cx="${W}" cy="${lastY.toFixed(1)}" r="3.5" fill="${color}" stroke="#161b27" stroke-width="2"/>
+    </svg>`;
+  }
+
+  function renderPulse() {
+    if (!pulseData) return;
+    const d = pulseData;
+    const comp = d.composite;
+    const sig  = d.signals || {};
+
+    // Timestamp
+    const gen = new Date(d.generated);
+    document.getElementById('pulse-updated').textContent =
+      'Updated ' + gen.toLocaleDateString('en-US', { month:'short', day:'numeric' }) +
+      ' · ' + gen.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+
+    // Bar marker position: score 0=extreme fear (left), 100=greed (right)
+    // High score = fear = left side of bar
+    const markerPct = (100 - comp.score);  // invert so fear=left
+
+    // Composite color
+    const compColor = comp.score >= 70 ? '#f87171' : comp.score >= 40 ? '#fbbf24' : '#4ade80';
+
+    // VIX zone from vix_zone field
+    const zone = d.vix_zone || {};
+    const balance = parseNum(document.getElementById('inp-balance').value);
+    const collat  = parseNum(document.getElementById('inp-collateral').value);
+    const cash    = parseNum(document.getElementById('inp-cash').value);
+    const maxDeploy = balance * (1 - (zone.cash_lo || 0.10));
+    const shares = balance - cash - collat;
+    const newCsp = Math.max(0, maxDeploy - shares - collat);
+
+    function sigCard(key, wide) {
+      const s = sig[key];
+      if (!s) return '';
+      const m = PULSE_META[key];
+      const color = valColor(s.status);
+      const spark = makeSpark(s.history, color);
+      const deltaHtml = s.delta
+        ? `<div class="pulse-sig-sub">${s.delta}</div>`
+        : `<div class="pulse-sig-sub">&nbsp;</div>`;
+      return `<div class="pulse-signal-card${wide ? ' wide' : ''}">
+        <button class="pulse-info-btn" onclick="openPulseSheet('${key}')">i</button>
+        <div class="pulse-sig-name">${m.name}</div>
+        <div class="pulse-sig-val" style="color:${color}">${s.display}${s.unit ? '<span style="font-size:13px;color:#475569;font-weight:400"> ' + s.unit + '</span>' : ''}</div>
+        ${deltaHtml}
+        <span class="pulse-sig-pill ${pillCls(s.status)}">${s.label}</span>
+        ${spark}
+      </div>`;
+    }
+
+    // HV rank card
+    const hv = d.hv_rank;
+    const hvCard = hv ? `<div class="pulse-signal-card wide">
+      <button class="pulse-info-btn" onclick="openPulseSheet('hvrank')">i</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div>
+          <div class="pulse-sig-name">SPX 52-Week HV Rank</div>
+          <div class="pulse-sig-val" style="color:${valColor(hv.status)}">${hv.rank}<span style="font-size:13px;color:#475569;font-weight:400"> / 100</span></div>
+          <div class="pulse-sig-sub">${hv.current_hv20}% realized vol</div>
+          <span class="pulse-sig-pill ${pillCls(hv.status)}">${hv.label}</span>
+        </div>
+        <div style="text-align:right;font-size:11px;color:#475569;line-height:1.8;">
+          Sell premium when<br>HV Rank <span style="color:#4ade80;font-weight:700">&gt; 50</span><br>
+          <span style="color:${valColor(hv.status)};font-weight:700">Top ${100 - hv.rank}th percentile</span>
+        </div>
+      </div>
+    </div>` : '';
+
+    document.getElementById('pulse-content').innerHTML = `
+      <!-- Composite -->
+      <div class="pulse-composite">
+        <div class="section-label" style="margin-bottom:8px;">Composite Sentiment · ${comp.total} signals</div>
+        <div class="pulse-comp-row">
+          <div class="pulse-comp-score" style="color:${compColor}">${comp.score}</div>
+          <div class="pulse-comp-right">
+            <div class="pulse-comp-label" style="color:${compColor}">${comp.label}</div>
+            <div class="pulse-bar-track">
+              <div class="pulse-bar-fill"></div>
+              <div class="pulse-bar-marker" style="left:${markerPct}%"></div>
+            </div>
+            <div class="pulse-bar-labels"><span>Extreme Fear</span><span>Neutral</span><span>Greed</span></div>
+          </div>
+        </div>
+        <div class="pulse-comp-desc">
+          ${comp.fear_count} of ${comp.total} signals in fear territory ·
+          <strong>Deploy ${Math.round((1-(zone.cash_hi||0.15))*100)}–${Math.round((1-(zone.cash_lo||0.10))*100)}%</strong>
+          of capital · VIX zone: ${zone.name || '—'}
+        </div>
+      </div>
+
+      <!-- Signals -->
+      <div class="pulse-section-label">Volatility</div>
+      <div class="pulse-signal-grid">${sigCard('vix')}${sigCard('pcr')}</div>
+
+      <div class="pulse-section-label">Sentiment</div>
+      <div class="pulse-signal-grid">${sigCard('fg')}${sigCard('aaii')}</div>
+
+      <div class="pulse-section-label">Credit &amp; Macro</div>
+      <div class="pulse-signal-grid">${sigCard('hy', true)}${sigCard('breadth')}${sigCard('curve')}</div>
+
+      <div class="pulse-section-label">Premium Environment</div>
+      <div class="pulse-signal-grid">${hvCard}</div>
+
+      <!-- Deploy guidance -->
+      <div class="card" style="border-color:#3730a3;">
+        <div class="section-label" style="color:#818cf8;">Capital Deployment Guidance</div>
+        <div class="check-row"><span class="check-lbl">VIX Zone</span><span class="check-val c-white">${zone.name} (${zone.range})</span></div>
+        <div class="check-row"><span class="check-lbl">Cash to Hold</span><span class="check-val c-dim">${Math.round((zone.cash_lo||0.10)*100)}–${Math.round((zone.cash_hi||0.15)*100)}%</span></div>
+        <div class="check-row"><span class="check-lbl">Max Deployable</span><span class="check-val c-blue">$${(maxDeploy/1000).toFixed(0)}k</span></div>
+        <div class="check-row"><span class="check-lbl">Open CSP Collateral</span><span class="check-val c-white">$${(collat/1000).toFixed(0)}k</span></div>
+        <div style="background:#0d1220;border:1px solid #3730a3;border-radius:6px;padding:11px 13px;margin-top:8px;">
+          <div style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Available for New CSPs</div>
+          <div style="font-size:22px;font-weight:700;color:#818cf8;">$${(newCsp/1000).toFixed(0)}k</div>
+          <div style="font-size:11px;color:#334155;margin-top:3px;">Uses current Deploy tab inputs · update balance &amp; collateral there first</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function openPulseSheet(key) {
+    const meta = PULSE_META[key] || (key === 'hvrank' ? {
+      name: "SPX HV Rank", desc: "<strong>Historical Volatility Rank</strong> is the percentile of today's 20-day realized SPX vol vs the past 52 weeks. Rank 71 means current vol is higher than 71% of past-year readings.", why: "You profit from selling options when <strong>implied vol exceeds what actually realizes</strong>. HV Rank > 50 historically means options are pricing in more fear than materializes. Below 30 = thin premium, proceed carefully.", refs: [{color:"#f87171",label:"< 30 Thin (size small)"},{color:"#fbbf24",label:"30–60 Normal"},{color:"#4ade80",label:"> 60 Rich (sell aggressively)"}], src: "Yahoo Finance ^GSPC", srcUrl: "https://finance.yahoo.com/quote/%5EGSPC/history/", src2: "Barchart SPX Vol", src2Url: "https://www.barchart.com/stocks/quotes/%5ESPX/volatility-greeks"
+    } : null);
+    if (!meta) return;
+
+    const sig = (pulseData && pulseData.signals && pulseData.signals[key]) ||
+                (key === 'hvrank' && pulseData && pulseData.hv_rank ? {
+                  display: String(pulseData.hv_rank.rank), unit: '/ 100',
+                  status: pulseData.hv_rank.status, label: pulseData.hv_rank.label,
+                  delta: `${pulseData.hv_rank.current_hv20}% current HV20`, delta_dir: 'neutral',
+                  history: pulseData.hv_rank.history || []
+                } : null);
+
+    const color = sig ? valColor(sig.status) : '#94a3b8';
+    const refLegend = meta.refs.map(r =>
+      `<div class="pulse-ref-item"><div class="pulse-ref-dash" style="background:${r.color}"></div><span>${r.label}</span></div>`
+    ).join('');
+
+    const src2Html = meta.src2 ? `
+      <a class="pulse-src-link" href="${meta.src2Url}" target="_blank">
+        <div><span>Also see</span><span>${meta.src2}</span></div>
+        <span class="pulse-src-arrow">↗</span>
+      </a>` : '';
+
+    const histChart = sig && sig.history && sig.history.length > 1
+      ? makeHistoryChart(sig.history, color, [])
+      : '<div style="color:#334155;font-size:12px;text-align:center;padding:12px;">No history data</div>';
+
+    document.getElementById('pulseSheetTitle').textContent = meta.name;
+    document.getElementById('pulseSheetBody').innerHTML = `
+      ${sig ? `<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px;">
+        <span style="font-size:30px;font-weight:700;color:${color}">${sig.display}${sig.unit ? ' <span style="font-size:13px;color:#475569;font-weight:400">'+sig.unit+'</span>' : ''}</span>
+      </div>
+      <span class="pulse-sig-pill ${pillCls(sig.status)}" style="margin-bottom:12px;display:inline-block">${sig.label}</span>` : ''}
+      <p class="pulse-sheet-desc">${meta.desc}</p>
+      <div class="pulse-chart-wrap">
+        <div class="pulse-chart-title">30-Day History</div>
+        ${histChart}
+        <div class="pulse-chart-xlabels"><span>30d ago</span><span>15d ago</span><span>Today</span></div>
+      </div>
+      <div class="pulse-ref-legend">${refLegend}</div>
+      <div class="pulse-why-box">
+        <div class="pulse-why-title">Why it matters for options sellers</div>
+        <div class="pulse-why-body">${meta.why}</div>
+      </div>
+      <a class="pulse-src-link" href="${meta.srcUrl}" target="_blank">
+        <div><span>Data Source</span><span>${meta.src}</span></div>
+        <span class="pulse-src-arrow">↗</span>
+      </a>
+      ${src2Html}
+    `;
+    document.getElementById('pulseBackdrop').classList.add('open');
+    document.getElementById('pulseSheet').classList.add('open');
+  }
+
+  function closePulseSheet() {
+    document.getElementById('pulseBackdrop').classList.remove('open');
+    document.getElementById('pulseSheet').classList.remove('open');
   }
 
   function switchTab(name, btn) {
