@@ -1,0 +1,30 @@
+name: Update Market Pulse
+
+on:
+  schedule:
+    # 9:05am ET on weekdays (UTC-4 in summer / UTC-5 in winter; use 13:05 UTC)
+    - cron: "5 13 * * 1-5"
+  workflow_dispatch: # allow manual trigger from GitHub Actions tab
+
+jobs:
+  pulse:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests numpy python-dotenv yfinance
+
+      - name: Run Market Pulse scripts
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.PULSE_GITHUB_TOKEN }}
+          GIST_ID: ${{ secrets.GIST_ID }}
+        run: bash run_pulse.sh
