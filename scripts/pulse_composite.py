@@ -22,7 +22,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
+GITHUB_TOKEN = os.getenv("PULSE_GIST_TOKEN") or os.getenv("GITHUB_TOKEN", "")
 GIST_ID      = os.getenv("GIST_ID", "")
 
 OUTPUT_DIR = "output"
