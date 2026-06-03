@@ -1038,7 +1038,8 @@
     // Try Gist first (works on phone), fall back to local file
     if (token && gistId) {
       try {
-        const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+        const res = await fetch(`https://api.github.com/gists/${gistId}?t=` + Date.now(), {
+          cache: 'no-store',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/vnd.github+json',
@@ -1347,6 +1348,11 @@
   renderJournal();
   setSyncStatus('');
   syncFromGist();
+
+  // Re-fetch pulse data when app comes back from background (mobile home screen)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') pulseLoaded = false;
+  });
 </script>
 </body>
 </html>
